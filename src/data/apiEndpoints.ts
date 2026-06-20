@@ -282,7 +282,7 @@ export const apiEndpointsList: ApiEndpoint[] = [
         description: 'Login successful. Returns access token, sets Refresh Token in Cookie.',
         example: {
           success: true,
-          accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+          accessToken: '<YOUR_ACCESS_TOKEN>',
           expiresInSeconds: 900,
           user: { id: 'usr-admin-88', email: 'admin@fortify.com', role: 'ADMIN' },
         },
@@ -343,10 +343,7 @@ export const apiEndpointsList: ApiEndpoint[] = [
           success: true,
           message:
             'Authenticated successfully! Co-occurring Refresh Token cookie set in document environment.',
-          accessToken:
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN5cy1rZXkifQ.' +
-            btoa(JSON.stringify({ userId: found.id, email: found.email, role: found.role })) +
-            '.hashedsignature_demo',
+          accessToken: '<YOUR_ACCESS_TOKEN>',
           expiresInSeconds: 900,
           user: { id: found.id, email: found.email, role: found.role },
         },
@@ -406,7 +403,7 @@ export const apiEndpointsList: ApiEndpoint[] = [
         description: 'Refreshed access tokens.',
         example: {
           success: true,
-          accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.rotated_access_payload...',
+          accessToken: '<YOUR_ROTATED_ACCESS_TOKEN>',
           expiresInSeconds: 900,
         },
       },
@@ -432,16 +429,7 @@ export const apiEndpointsList: ApiEndpoint[] = [
         body: {
           success: true,
           message: 'Refresh token rotated successfully with state protection mechanisms.',
-          accessToken:
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InN5cy1rZXkifQ.' +
-            btoa(
-              JSON.stringify({
-                userId: simState.currentUser.id,
-                email: simState.currentUser.email,
-                role: simState.currentUser.role,
-              }),
-            ) +
-            '.rotatedsignature_demo',
+          accessToken: '<YOUR_ROTATED_ACCESS_TOKEN>',
           expiresInSeconds: 900,
         },
       };
@@ -601,7 +589,7 @@ export const apiEndpointsList: ApiEndpoint[] = [
         type: 'string',
         required: true,
         description: 'Bearer access token format.',
-        defaultValue: 'Bearer eyJhbGci...',
+        defaultValue: 'Bearer <YOUR_ACCESS_TOKEN>',
       },
     ],
     responses: [
