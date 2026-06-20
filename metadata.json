@@ -1,0 +1,6 @@
+{
+  "name": "FortifyAuth Spec & Design Hub",
+  "description": "An interactive environment for exploring, specifying, and playing with FortifyAuth's production-grade architecture, schemas, and security checklists.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
