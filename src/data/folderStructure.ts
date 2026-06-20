@@ -4,7 +4,8 @@ export const folderStructureData: FileNode = {
   name: 'fortify-auth-service',
   type: 'folder',
   path: '/',
-  description: 'FortifyAuth project root housing typescript, docker configs, database configuration and swagger docs.',
+  description:
+    'FortifyAuth project root housing typescript, docker configs, database configuration and swagger docs.',
   children: [
     {
       name: 'prisma',
@@ -18,9 +19,9 @@ export const folderStructureData: FileNode = {
           path: '/prisma/schema.prisma',
           description: 'Prisma database model definitions & relationships.',
           codeSample: `// prisma/schema.prisma
-// Contained in the "Database Schema" section, click tab above to view the complete production-grade schema.`
-        }
-      ]
+// Contained in the "Database Schema" section, click tab above to view the complete production-grade schema.`,
+        },
+      ],
     },
     {
       name: 'src',
@@ -38,7 +39,8 @@ export const folderStructureData: FileNode = {
               name: 'env.ts',
               type: 'file',
               path: '/src/config/env.ts',
-              description: 'Strict typing and validation schema for environment variables using Zod.',
+              description:
+                'Strict typing and validation schema for environment variables using Zod.',
               codeSample: `import { z } from 'zod';
 import dotenv from 'dotenv';
 
@@ -62,7 +64,7 @@ const envSchema = z.object({
 });
 
 export const env = envSchema.parse(process.env);
-export type EnvType = z.infer<typeof envSchema>;`
+export type EnvType = z.infer<typeof envSchema>;`,
             },
             {
               name: 'redis.ts',
@@ -83,21 +85,23 @@ export const redis = new Redis(env.REDIS_URL, {
 });
 
 redis.on('connect', () => console.log('Redis connected successfully'));
-redis.on('error', (err) => console.error('Redis connection failure:', err));`
-            }
-          ]
+redis.on('error', (err) => console.error('Redis connection failure:', err));`,
+            },
+          ],
         },
         {
           name: 'middlewares',
           type: 'folder',
           path: '/src/middlewares',
-          description: 'Request filters, rate-limit boundaries, CORS protocols and schema validators.',
+          description:
+            'Request filters, rate-limit boundaries, CORS protocols and schema validators.',
           children: [
             {
               name: 'auth.middleware.ts',
               type: 'file',
               path: '/src/middlewares/auth.middleware.ts',
-              description: 'Validates short-lived authorization JWT headers and injects user profile into context.',
+              description:
+                'Validates short-lived authorization JWT headers and injects user profile into context.',
               codeSample: `import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env';
@@ -146,13 +150,14 @@ export function authorize(roles: ('USER' | 'ADMIN')[]) {
     }
     next();
   };
-}`
+}`,
             },
             {
               name: 'rateLimit.ts',
               type: 'file',
               path: '/src/middlewares/rateLimit.ts',
-              description: 'Redis-backed granular sliding-window rate-limiter safeguarding endpoints against brute force and credential stuffing.',
+              description:
+                'Redis-backed granular sliding-window rate-limiter safeguarding endpoints against brute force and credential stuffing.',
               codeSample: `import { Request, Response, NextFunction } from 'express';
 import { redis } from '../config/redis';
 
@@ -201,7 +206,7 @@ export function createRateLimiter(config: RateLimitConfig) {
       next();
     }
   };
-}`
+}`,
             },
             {
               name: 'validate.ts',
@@ -233,21 +238,23 @@ export const validate = (schema: AnyZodObject) => {
       next(error);
     }
   };
-};`
-            }
-          ]
+};`,
+            },
+          ],
         },
         {
           name: 'services',
           type: 'folder',
           path: '/src/services',
-          description: 'Business logic layers handling DB interactions, token signatures, and email transmissions.',
+          description:
+            'Business logic layers handling DB interactions, token signatures, and email transmissions.',
           children: [
             {
               name: 'token.service.ts',
               type: 'file',
               path: '/src/services/token.service.ts',
-              description: 'Core logic for JWT tokens and secure database Refresh Token Rotation with Breach Detection capabilities.',
+              description:
+                'Core logic for JWT tokens and secure database Refresh Token Rotation with Breach Detection capabilities.',
               codeSample: `import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { PrismaClient } from '@prisma/client';
@@ -344,7 +351,7 @@ export class TokenService {
       expiresInSeconds: 900 // 15 Minutes
     };
   }
-}`
+}`,
             },
             {
               name: 'email.service.ts',
@@ -396,11 +403,11 @@ export class EmailService {
       \`
     });
   }
-}`
-            }
-          ]
-        }
-      ]
-    }
-  ]
+}`,
+            },
+          ],
+        },
+      ],
+    },
+  ],
 };

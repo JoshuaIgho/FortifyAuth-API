@@ -9,15 +9,15 @@ APP_URL=https://api.fortifyauth.com
 
 # Relational Database connection parameters (PostgreSQL with SSL enabled)
 # Ensure to append sslmode=require in production to protect data in transit.
-DATABASE_URL="postgresql://fortify_prod_user:SECRET_PROD_PASSWORD@db-primary.vpc.internal:5432/fortify_db?sslmode=require&schema=public"
+DATABASE_URL="postgresql://<USER>:<PASSWORD>@<HOST>:5432/<DB>?sslmode=require&schema=public"
 
 # Redis cache and Token session store client string
-REDIS_URL="rediss://:REDIS_STRONG_AUTH_PASS@redis-cluster.vpc.internal:6379/0"
+REDIS_URL="rediss://:<PASSWORD>@<HOST>:6379/0"
 
 # HS256 JWT Cryptographic Secrets (Must be at least 32/64 high-entropy random characters)
 # Generate via: openssl rand -base64 48
-JWT_ACCESS_SECRET="g9B78x9mP2q10vK4hZ9Ly0SxF3zO8eB9pQ5wR3tR2fL6vK8q9bMvN"
-JWT_REFRESH_SECRET="l1B37x5mP8q29vK8hZ3Ly5SxF7zO2eB1pQ0wR5tR9fL4vK4q1bMvP"
+JWT_ACCESS_SECRET="<YOUR_JWT_ACCESS_SECRET>"
+JWT_REFRESH_SECRET="<YOUR_JWT_REFRESH_SECRET>"
 
 # Token lifespan thresholds limits
 JWT_ACCESS_EXPIRY=15m
@@ -27,7 +27,7 @@ JWT_REFRESH_EXPIRY=7d
 SMTP_HOST=smtp.resend.com
 SMTP_PORT=465
 SMTP_USER=resend
-SMTP_PASS=re_98B756vbcS_secretPass
+SMTP_PASS=<YOUR_SMTP_PASSWORD>
 SMTP_FROM="FortifyAuth Security <security@fortifyauth.com>"
 
 # CORS and Allowed Origins Configuration (No wildcards permitted)
@@ -116,14 +116,14 @@ services:
     environment:
       - PORT=3000
       - NODE_ENV=production
-      - DATABASE_URL=postgresql://fortify_user:fortify_db_password@postgres_db:5432/fortify_database?sslmode=disable
-      - REDIS_URL=redis://:redis_secret_pass@redis_cache:6379/0
-      - JWT_ACCESS_SECRET=g9B78x9mP2q10vK4hZ9Ly0SxF3zO8eB9pQ5wR3tR2fL6vK8q9bMvN
-      - JWT_REFRESH_SECRET=l1B37x5mP8q29vK8hZ3Ly5SxF7zO2eB1pQ0wR5tR9fL4vK4q1bMvP
+      - DATABASE_URL=postgresql://<USER>:<PASSWORD>@postgres_db:5432/fortify_database?sslmode=disable
+      - REDIS_URL=redis://:<PASSWORD>@redis_cache:6379/0
+      - JWT_ACCESS_SECRET=<YOUR_JWT_ACCESS_SECRET>
+      - JWT_REFRESH_SECRET=<YOUR_JWT_REFRESH_SECRET>
       - SMTP_HOST=smtp.mailtrap.io
       - SMTP_PORT=2525
       - SMTP_USER=your_user_id
-      - SMTP_PASS=your_password
+      - SMTP_PASS=<PASSWORD>
       - SMTP_FROM=security@fortifyauth.com
     depends_on:
       postgres_db:
@@ -139,8 +139,8 @@ services:
     image: postgres:15-alpine
     container_name: postgres_db_prod
     environment:
-      - POSTGRES_USER=fortify_user
-      - POSTGRES_PASSWORD=fortify_db_password
+      - POSTGRES_USER=<USER>
+      - POSTGRES_PASSWORD=<PASSWORD>
       - POSTGRES_DB=fortify_database
     ports:
       - "5432:5432"
@@ -159,13 +159,13 @@ services:
   redis_cache:
     image: redis:7-alpine
     container_name: redis_cache_prod
-    command: redis-server --requirepass redis_secret_pass
+    command: redis-server --requirepass <PASSWORD>
     ports:
       - "6379:6379"
     volumes:
       - redisdata:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "redis_secret_pass", "ping"]
+      test: ["CMD", "redis-cli", "-a", "<PASSWORD>", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5

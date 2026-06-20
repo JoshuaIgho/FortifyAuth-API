@@ -6,29 +6,32 @@ import { motion } from 'motion/react';
 export default function ArchitectureView() {
   const [selectedNodeId, setSelectedNodeId] = useState<string>('express_app');
 
-  const selectedNode = archNodes.find(n => n.id === selectedNodeId) || archNodes[2];
+  const selectedNode = archNodes.find((n) => n.id === selectedNodeId) || archNodes[2];
 
   return (
     <div className="flex flex-col lg:flex-row h-full overflow-hidden bg-[#020617]">
       {/* Sidebar Layout Visual Area */}
       <div className="flex-grow p-6 overflow-y-auto flex flex-col space-y-6">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-white font-sans">High-Level Architecture Blueprint</h2>
+          <h2 className="text-xl font-bold tracking-tight text-white font-sans">
+            High-Level Architecture Blueprint
+          </h2>
           <p className="text-xs text-slate-400 mt-1">
-            FortifyAuth is designed as a secure, high-integrity, stateless-first credential validator. Select system nodes below to inspect their structural responsibilities.
+            FortifyAuth is designed as a secure, high-integrity, stateless-first credential
+            validator. Select system nodes below to inspect their structural responsibilities.
           </p>
         </div>
 
         {/* Beautiful Layout Architectural Diagram Rendered in Rich SVG/HTML Blocks */}
         <div className="bg-[#0f172a] rounded-xl border border-[#1e293b] p-6 shadow-2xl relative min-h-[420px] flex flex-col justify-between overflow-x-auto">
-          
           {/* Node Diagram Matrix */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
-            
             {/* Column 1: Entry Gateways */}
             <div className="flex flex-col justify-center space-y-8 relative z-10">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 text-center md:text-left mb-2 font-mono">Ingress & Entry</div>
-              
+              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 text-center md:text-left mb-2 font-mono">
+                Ingress & Entry
+              </div>
+
               {/* Client node */}
               <button
                 onClick={() => setSelectedNodeId('client')}
@@ -38,11 +41,15 @@ export default function ArchitectureView() {
                     : 'border-[#1e293b] bg-slate-950/60 hover:bg-slate-900 text-slate-300'
                 }`}
               >
-                <div className={`flex items-center space-x-2 font-bold text-xs ${selectedNodeId === 'client' ? 'text-[#10b981]' : 'text-slate-400'}`}>
+                <div
+                  className={`flex items-center space-x-2 font-bold text-xs ${selectedNodeId === 'client' ? 'text-[#10b981]' : 'text-slate-400'}`}
+                >
                   <span>📱 client</span>
                 </div>
                 <div className="font-semibold text-slate-100 text-xs mt-1">Client Applications</div>
-                <p className="text-[10px] text-slate-400 mt-0.5 leading-normal">SPA memory tokens & HttpOnly Cookies.</p>
+                <p className="text-[10px] text-slate-400 mt-0.5 leading-normal">
+                  SPA memory tokens & HttpOnly Cookies.
+                </p>
               </button>
 
               {/* Gateway Node */}
@@ -54,18 +61,24 @@ export default function ArchitectureView() {
                     : 'border-[#1e293b] bg-slate-950/60 hover:bg-slate-900 text-slate-300'
                 }`}
               >
-                <div className={`flex items-center space-x-2 font-bold text-xs ${selectedNodeId === 'gateway' ? 'text-[#3b82f6]' : 'text-slate-400'}`}>
+                <div
+                  className={`flex items-center space-x-2 font-bold text-xs ${selectedNodeId === 'gateway' ? 'text-[#3b82f6]' : 'text-slate-400'}`}
+                >
                   <span>🛡️ gateway</span>
                 </div>
                 <div className="font-semibold text-slate-100 text-xs mt-1">Reverse Proxy & WAF</div>
-                <p className="text-[10px] text-slate-400 mt-0.5 leading-normal">Nginx SSL Termination & IP rate boundaries.</p>
+                <p className="text-[10px] text-slate-400 mt-0.5 leading-normal">
+                  Nginx SSL Termination & IP rate boundaries.
+                </p>
               </button>
             </div>
 
             {/* Column 2: Authentication Core */}
             <div className="flex flex-col justify-center relative z-10">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 text-center mb-6 font-mono">Security Engine</div>
-              
+              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 text-center mb-6 font-mono">
+                Security Engine
+              </div>
+
               {/* Core application logic */}
               <button
                 onClick={() => setSelectedNodeId('express_app')}
@@ -77,11 +90,15 @@ export default function ArchitectureView() {
               >
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className="px-2 py-0.5 text-[8px] font-bold tracking-wider uppercase text-emerald-400 bg-emerald-950/80 rounded border border-[#10b981]/20 font-mono">CORE ENGINE</span>
+                    <span className="px-2 py-0.5 text-[8px] font-bold tracking-wider uppercase text-emerald-400 bg-emerald-950/80 rounded border border-[#10b981]/20 font-mono">
+                      CORE ENGINE
+                    </span>
                     <span className="text-xs">🚀 server</span>
                   </div>
                   <h4 className="font-bold text-white text-xs mt-3">FortifyAuth Server</h4>
-                  <p className="text-[10px] text-slate-400 mt-1 leading-normal">TypeScript Express API, Argon2id passwords, and JWT / state generation.</p>
+                  <p className="text-[10px] text-slate-400 mt-1 leading-normal">
+                    TypeScript Express API, Argon2id passwords, and JWT / state generation.
+                  </p>
                 </div>
                 <div className="font-mono text-[9px] text-[#10b981] font-semibold bg-slate-950/95 px-2 py-0.5 rounded border border-[#1e293b] self-start mt-2">
                   PORT 3000
@@ -91,7 +108,9 @@ export default function ArchitectureView() {
 
             {/* Column 3: Data & Ext Service Subsystems */}
             <div className="flex flex-col justify-center space-y-6 relative z-10">
-              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 text-center md:text-left mb-2 font-mono">Backing Services</div>
+              <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 text-center md:text-left mb-2 font-mono">
+                Backing Services
+              </div>
 
               {/* Redis Store */}
               <button
@@ -102,11 +121,17 @@ export default function ArchitectureView() {
                     : 'border-[#1e293b] bg-slate-950/60 hover:bg-slate-900 text-slate-300'
                 }`}
               >
-                <div className={`flex items-center space-x-2 font-bold text-xs ${selectedNodeId === 'redis_store' ? 'text-[#f43f5e]' : 'text-slate-400'}`}>
+                <div
+                  className={`flex items-center space-x-2 font-bold text-xs ${selectedNodeId === 'redis_store' ? 'text-[#f43f5e]' : 'text-slate-400'}`}
+                >
                   <span>⚡ redis</span>
                 </div>
-                <div className="font-semibold text-slate-100 text-xs mt-1">In-Memory Cache & Limiter</div>
-                <p className="text-[10px] text-slate-400 mt-0.5 leading-normal">Active jti blacklist, sliding window rate counters.</p>
+                <div className="font-semibold text-slate-100 text-xs mt-1">
+                  In-Memory Cache & Limiter
+                </div>
+                <p className="text-[10px] text-slate-400 mt-0.5 leading-normal">
+                  Active jti blacklist, sliding window rate counters.
+                </p>
               </button>
 
               {/* Postgres DB */}
@@ -118,11 +143,17 @@ export default function ArchitectureView() {
                     : 'border-[#1e293b] bg-slate-950/60 hover:bg-slate-900 text-slate-300'
                 }`}
               >
-                <div className={`flex items-center space-x-2 font-bold text-xs ${selectedNodeId === 'postgres_db' ? 'text-[#3b82f6]' : 'text-slate-400'}`}>
+                <div
+                  className={`flex items-center space-x-2 font-bold text-xs ${selectedNodeId === 'postgres_db' ? 'text-[#3b82f6]' : 'text-slate-400'}`}
+                >
                   <span>🐘 postgresql</span>
                 </div>
-                <div className="font-semibold text-slate-100 text-xs mt-1">Prisma Relational Database</div>
-                <p className="text-[10px] text-slate-400 mt-0.5 leading-normal">User stores, login histories, audit trails.</p>
+                <div className="font-semibold text-slate-100 text-xs mt-1">
+                  Prisma Relational Database
+                </div>
+                <p className="text-[10px] text-slate-400 mt-0.5 leading-normal">
+                  User stores, login histories, audit trails.
+                </p>
               </button>
 
               {/* Email Gateway */}
@@ -134,14 +165,19 @@ export default function ArchitectureView() {
                     : 'border-[#1e293b] bg-slate-950/60 hover:bg-slate-900 text-slate-300'
                 }`}
               >
-                <div className={`flex items-center space-x-2 font-bold text-xs ${selectedNodeId === 'smtp_server' ? 'text-[#10b981]' : 'text-slate-400'}`}>
+                <div
+                  className={`flex items-center space-x-2 font-bold text-xs ${selectedNodeId === 'smtp_server' ? 'text-[#10b981]' : 'text-slate-400'}`}
+                >
                   <span>✉️ smtp mail</span>
                 </div>
-                <div className="font-semibold text-slate-100 text-xs mt-1">Transactional Dispatcher</div>
-                <p className="text-[10px] text-slate-400 mt-0.5 leading-normal">Nodemailer / Resend OTP & Verification dispatch.</p>
+                <div className="font-semibold text-slate-100 text-xs mt-1">
+                  Transactional Dispatcher
+                </div>
+                <p className="text-[10px] text-slate-400 mt-0.5 leading-normal">
+                  Nodemailer / Resend OTP & Verification dispatch.
+                </p>
               </button>
             </div>
-
           </div>
 
           {/* Visual flow markers connecting components */}
@@ -160,7 +196,6 @@ export default function ArchitectureView() {
             <span>✦ STATELESS REST API PRIVACY</span>
             <span>🛡️ PROD-READY TOPOLOGY</span>
           </div>
-
         </div>
       </div>
 
@@ -179,12 +214,16 @@ export default function ArchitectureView() {
 
           <div>
             <h4 className="text-sm font-semibold text-white font-sans">{selectedNode.label}</h4>
-            <div className="text-xs text-slate-400 mt-2 leading-relaxed whitespace-pre-line">{selectedNode.description}</div>
+            <div className="text-xs text-slate-400 mt-2 leading-relaxed whitespace-pre-line">
+              {selectedNode.description}
+            </div>
           </div>
 
           {/* Key specifications */}
           <div className="bg-slate-950/40 rounded-xl p-4 border border-[#1e293b]">
-            <h5 className="text-[10px] text-[#64748b] font-bold uppercase tracking-wider font-mono mb-2">Technology Integration</h5>
+            <h5 className="text-[10px] text-[#64748b] font-bold uppercase tracking-wider font-mono mb-2">
+              Technology Integration
+            </h5>
             <div className="text-xs font-mono font-medium text-[#cbd5e1] bg-slate-950/80 p-2.5 rounded border border-[#1e293b]/60 leading-normal">
               {selectedNode.techUsed}
             </div>
@@ -192,7 +231,9 @@ export default function ArchitectureView() {
 
           {/* Responsibilities */}
           <div className="space-y-2">
-            <h5 className="text-[10px] text-[#64748b] font-bold uppercase tracking-wider font-mono mb-1">Assigned Operational Duties</h5>
+            <h5 className="text-[10px] text-[#64748b] font-bold uppercase tracking-wider font-mono mb-1">
+              Assigned Operational Duties
+            </h5>
             <ul className="space-y-2.5">
               {selectedNode.responsibility.map((resp, idx) => (
                 <li key={idx} className="flex items-start text-xs text-slate-300 font-sans">

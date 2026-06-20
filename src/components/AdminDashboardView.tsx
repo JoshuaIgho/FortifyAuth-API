@@ -1,22 +1,30 @@
 import React, { useState } from 'react';
-import { Shovel as ShieldAlert, TrendingUp, Users, Terminal, RefreshCw, Activity, Sparkles, Ban } from 'lucide-react';
+import {
+  Shovel as ShieldAlert,
+  TrendingUp,
+  Users,
+  Terminal,
+  RefreshCw,
+  Activity,
+  Sparkles,
+  Ban,
+} from 'lucide-react';
 
 export default function AdminDashboardView() {
   const [refreshCount, setRefreshCount] = useState(0);
 
   // Dynamic values that bounce on refresh to simulate active telemetry
   const activeThrottles = 14 + (refreshCount % 5);
-  const activeSessions = 1142 + (refreshCount * 7 % 15);
-  const authRate = 99.987 + (refreshCount * 0.001 % 0.008);
-  const suspiciousCount = 2 + (refreshCount * 2 % 7);
+  const activeSessions = 1142 + ((refreshCount * 7) % 15);
+  const authRate = 99.987 + ((refreshCount * 0.001) % 0.008);
+  const suspiciousCount = 2 + ((refreshCount * 2) % 7);
 
   const simulateRefresh = () => {
-    setRefreshCount(prev => prev + 1);
+    setRefreshCount((prev) => prev + 1);
   };
 
   return (
     <div className="p-6 bg-[#020617] h-full overflow-y-auto space-y-6">
-      
       {/* Metrics Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -24,7 +32,9 @@ export default function AdminDashboardView() {
             <Activity className="h-4.5 w-4.5 text-[#10b981]" />
             <span>Operational Admin and Threat Telemetry Hub</span>
           </h2>
-          <p className="text-xs text-slate-400 mt-1">Real-time status tracking of all user sign-in paths across geographical server clusters.</p>
+          <p className="text-xs text-slate-400 mt-1">
+            Real-time status tracking of all user sign-in paths across geographical server clusters.
+          </p>
         </div>
 
         <button
@@ -38,16 +48,21 @@ export default function AdminDashboardView() {
 
       {/* Grid of 4 numeric cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        
         {/* Card 1 */}
         <div className="p-5 bg-[#0f172a] border border-[#1e293b] rounded-xl flex items-start gap-4 shadow-xl">
           <div className="p-3 rounded-lg bg-emerald-950/40 border border-[#10b981]/15 text-[#10b981]">
             <Users className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block font-bold">ACTIVE PROXY SESSIONS</span>
-            <span className="text-xl font-mono font-extrabold text-white block mt-1">{activeSessions}</span>
-            <span className="text-[9px] text-[#10b981] font-sans block mt-0.5">↑ 12% Since yesterday</span>
+            <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block font-bold">
+              ACTIVE PROXY SESSIONS
+            </span>
+            <span className="text-xl font-mono font-extrabold text-white block mt-1">
+              {activeSessions}
+            </span>
+            <span className="text-[9px] text-[#10b981] font-sans block mt-0.5">
+              ↑ 12% Since yesterday
+            </span>
           </div>
         </div>
 
@@ -57,9 +72,15 @@ export default function AdminDashboardView() {
             <TrendingUp className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block font-bold">AUTH PIPELINE UPTIME</span>
-            <span className="text-xl font-mono font-extrabold text-white block mt-1">{authRate.toFixed(3)}%</span>
-            <span className="text-[9px] text-slate-400 font-sans block mt-0.5">N+2 High-Availability Active</span>
+            <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block font-bold">
+              AUTH PIPELINE UPTIME
+            </span>
+            <span className="text-xl font-mono font-extrabold text-white block mt-1">
+              {authRate.toFixed(3)}%
+            </span>
+            <span className="text-[9px] text-slate-400 font-sans block mt-0.5">
+              N+2 High-Availability Active
+            </span>
           </div>
         </div>
 
@@ -69,9 +90,15 @@ export default function AdminDashboardView() {
             <Ban className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block font-bold">IP ADDR BLACKLISTS</span>
-            <span className="text-xl font-mono font-extrabold text-white block mt-1">{activeThrottles}</span>
-            <span className="text-[9px] text-rose-400 font-sans block mt-0.5">Blocked via Redis Rate-Limiter</span>
+            <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block font-bold">
+              IP ADDR BLACKLISTS
+            </span>
+            <span className="text-xl font-mono font-extrabold text-white block mt-1">
+              {activeThrottles}
+            </span>
+            <span className="text-[9px] text-rose-400 font-sans block mt-0.5">
+              Blocked via Redis Rate-Limiter
+            </span>
           </div>
         </div>
 
@@ -81,23 +108,29 @@ export default function AdminDashboardView() {
             <ShieldAlert className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block font-bold">SUSPICIOUS ACTIVITIES</span>
-            <span className="text-xl font-mono font-extrabold text-white block mt-1">{suspiciousCount}</span>
-            <span className="text-[9px] text-amber-400 font-sans block mt-0.5">Requires audit compliance check</span>
+            <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block font-bold">
+              SUSPICIOUS ACTIVITIES
+            </span>
+            <span className="text-xl font-mono font-extrabold text-white block mt-1">
+              {suspiciousCount}
+            </span>
+            <span className="text-[9px] text-amber-400 font-sans block mt-0.5">
+              Requires audit compliance check
+            </span>
           </div>
         </div>
-
       </div>
 
       {/* Visual Telemetry Rows */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
         {/* Left 2 Columns: Threat Map / Throughput Simulation */}
         <div className="lg:col-span-2 bg-[#0f172a] border border-[#1e293b] rounded-xl p-5 space-y-4 shadow-2xl">
           <div className="flex items-center justify-between border-b border-[#1e293b]/60 pb-3">
             <div className="flex items-center space-x-2">
               <Terminal className="h-4.5 w-4.5 text-[#10b981]" />
-              <h3 className="font-bold text-white text-[11px] uppercase tracking-wider font-mono">Real-Time Access Log Monitor</h3>
+              <h3 className="font-bold text-white text-[11px] uppercase tracking-wider font-mono">
+                Real-Time Access Log Monitor
+              </h3>
             </div>
             <span className="px-2 py-0.5 rounded bg-slate-950 text-[#10b981] text-[9px] font-mono font-bold animate-pulse">
               ● SYNCED LIVE
@@ -105,7 +138,6 @@ export default function AdminDashboardView() {
           </div>
 
           <div className="space-y-3 font-mono text-[10px] leading-relaxed">
-            
             {/* Log item 1 */}
             <div className="p-3 rounded bg-slate-950 border border-[#1e293b]/40 flex flex-col md:flex-row md:items-center justify-between gap-2 text-slate-300">
               <div className="flex items-center space-x-2">
@@ -124,7 +156,9 @@ export default function AdminDashboardView() {
               <div className="flex items-center space-x-2">
                 <span className="text-rose-400 font-bold">[RAT-BLOCKED]</span>
                 <span className="text-slate-400">2026-06-20 03:21:44</span>
-                <span className="text-rose-300">Auth attempts limit breached (failed dictionary)</span>
+                <span className="text-rose-300">
+                  Auth attempts limit breached (failed dictionary)
+                </span>
               </div>
               <div className="flex space-x-2 text-[9px] text-slate-500">
                 <span>IP: 185.190.141.2</span>
@@ -157,7 +191,6 @@ export default function AdminDashboardView() {
                 <span>Sydney, AU</span>
               </div>
             </div>
-
           </div>
         </div>
 
@@ -166,11 +199,12 @@ export default function AdminDashboardView() {
           <div>
             <div className="flex items-center space-x-2 border-b border-[#1e293b]/60 pb-3 mb-4">
               <Sparkles className="h-4 w-4 text-[#10b981]" />
-              <h3 className="font-bold text-white text-[11px] uppercase tracking-wider font-mono">Operational Metrics Gauges</h3>
+              <h3 className="font-bold text-white text-[11px] uppercase tracking-wider font-mono">
+                Operational Metrics Gauges
+              </h3>
             </div>
 
             <div className="space-y-4">
-              
               {/* Gauge 1 */}
               <div className="space-y-1">
                 <div className="flex justify-between text-[11px] font-sans">
@@ -214,20 +248,21 @@ export default function AdminDashboardView() {
                   <div className="h-full bg-amber-500 rounded-full" style={{ width: '12%' }} />
                 </div>
               </div>
-
             </div>
           </div>
 
           <div className="bg-slate-950 border border-[#1e293b] rounded-lg p-3.5 space-y-1.5 font-sans text-[10px] text-slate-450 mt-4">
-            <span className="font-extrabold text-white uppercase block">High Availability cluster summary</span>
+            <span className="font-extrabold text-white uppercase block">
+              High Availability cluster summary
+            </span>
             <p className="leading-normal">
-              Nodes are distributed horizontally across three primary AWS Availability Zones. Redis-Cluster replication retains transient structures, supporting fast disaster recovery with zero authentication state losses.
+              Nodes are distributed horizontally across three primary AWS Availability Zones.
+              Redis-Cluster replication retains transient structures, supporting fast disaster
+              recovery with zero authentication state losses.
             </p>
           </div>
         </div>
-
       </div>
-
     </div>
   );
 }

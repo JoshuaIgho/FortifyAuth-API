@@ -1,5 +1,16 @@
 import React, { useState } from 'react';
-import { Shield, KeyRound, Mail, User, Info, Smartphone, Check, AlertTriangle, Fingerprint, Lock } from 'lucide-react';
+import {
+  Shield,
+  KeyRound,
+  Mail,
+  User,
+  Info,
+  Smartphone,
+  Check,
+  AlertTriangle,
+  Fingerprint,
+  Lock,
+} from 'lucide-react';
 
 export default function AuthDemoView() {
   const [formType, setFormType] = useState<'login' | 'register'>('login');
@@ -8,21 +19,30 @@ export default function AuthDemoView() {
   const [fullName, setFullName] = useState('');
   const [errorCount, setErrorCount] = useState(0);
   const [isLocked, setIsLocked] = useState(false);
-  
+
   // States of authentication progress
   const [authStep, setAuthStep] = useState<'credentials' | 'mfa' | 'success'>('credentials');
   const [mfaCode, setMfaCode] = useState('');
-  const [bannerMsg, setBannerMsg] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+  const [bannerMsg, setBannerMsg] = useState<{
+    type: 'success' | 'error' | 'info';
+    text: string;
+  } | null>(null);
 
   const handleCredentialsSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (isLocked) {
-      setBannerMsg({ type: 'error', text: 'ALERT: Account remains locked. Please check email for emergency unlock token.' });
+      setBannerMsg({
+        type: 'error',
+        text: 'ALERT: Account remains locked. Please check email for emergency unlock token.',
+      });
       return;
     }
 
     if (!email || !password) {
-      setBannerMsg({ type: 'error', text: 'Validation Error: Email and password fields cannot be empty.' });
+      setBannerMsg({
+        type: 'error',
+        text: 'Validation Error: Email and password fields cannot be empty.',
+      });
       return;
     }
 
@@ -31,7 +51,10 @@ export default function AuthDemoView() {
         setBannerMsg({ type: 'error', text: 'Validation Error: Full Name is required.' });
         return;
       }
-      setBannerMsg({ type: 'success', text: 'Registration Successful! A secure validation token was sent to your email.' });
+      setBannerMsg({
+        type: 'success',
+        text: 'Registration Successful! A secure validation token was sent to your email.',
+      });
       setFormType('login');
       return;
     }
@@ -42,16 +65,22 @@ export default function AuthDemoView() {
       setErrorCount(nextErrors);
       if (nextErrors >= 5) {
         setIsLocked(true);
-        setBannerMsg({ type: 'error', text: 'CRITICAL SECURITY BREACH: 5 failed attempts. Account has been force-locked.' });
+        setBannerMsg({
+          type: 'error',
+          text: 'CRITICAL SECURITY BREACH: 5 failed attempts. Account has been force-locked.',
+        });
       } else {
-        setBannerMsg({ 
-          type: 'error', 
-          text: `Authentication failed. Invalid password. (${5 - nextErrors} attempts remaining before account lockout)` 
+        setBannerMsg({
+          type: 'error',
+          text: `Authentication failed. Invalid password. (${5 - nextErrors} attempts remaining before account lockout)`,
         });
       }
     } else {
       setErrorCount(0);
-      setBannerMsg({ type: 'info', text: 'Credentials valid. Two-Factor Authentication required (TOTP Step-up).' });
+      setBannerMsg({
+        type: 'info',
+        text: 'Credentials valid. Two-Factor Authentication required (TOTP Step-up).',
+      });
       setAuthStep('mfa');
     }
   };
@@ -62,7 +91,10 @@ export default function AuthDemoView() {
       setAuthStep('success');
       setBannerMsg({ type: 'success', text: 'Enterprise Identity Authenticated. Welcome back!' });
     } else {
-      setBannerMsg({ type: 'error', text: 'Security Warning: Invalid TOTP verification token code.' });
+      setBannerMsg({
+        type: 'error',
+        text: 'Security Warning: Invalid TOTP verification token code.',
+      });
     }
   };
 
@@ -79,10 +111,8 @@ export default function AuthDemoView() {
 
   return (
     <div className="p-6 bg-[#020617] h-full overflow-y-auto space-y-6 flex flex-col items-center justify-center">
-      
       {/* Container box */}
       <div className="w-full max-w-md bg-[#0f172a] rounded-xl border border-[#1e293b] overflow-hidden shadow-2xl">
-        
         {/* Top Header Badge */}
         <div className="p-5 border-b border-[#1e293b] bg-slate-950/40 text-center relative">
           <div className="absolute top-4 left-4 flex space-x-1">
@@ -100,18 +130,22 @@ export default function AuthDemoView() {
           <h3 className="font-bold text-white text-sm tracking-wide">
             {authStep === 'success' ? 'ACCESS CLEARANCE GRANTED' : 'FORTIFYAUTH IDENTITY GATEWAY'}
           </h3>
-          <p className="text-[10px] text-slate-500 font-mono mt-0.5">SECURE END-USER COMPLIANCE PORTAL</p>
+          <p className="text-[10px] text-slate-500 font-mono mt-0.5">
+            SECURE END-USER COMPLIANCE PORTAL
+          </p>
         </div>
 
         {/* Dynamic Warning Alert Banner */}
         {bannerMsg && (
-          <div className={`px-5 py-3 text-[11px] font-sans border-b flex items-start gap-2 ${
-            bannerMsg.type === 'success' 
-              ? 'bg-emerald-950/20 text-emerald-300 border-emerald-900/30' 
-              : bannerMsg.type === 'error'
-              ? 'bg-rose-950/20 text-rose-300 border-rose-900/30'
-              : 'bg-indigo-950/20 text-indigo-300 border-indigo-900/30'
-          }`}>
+          <div
+            className={`px-5 py-3 text-[11px] font-sans border-b flex items-start gap-2 ${
+              bannerMsg.type === 'success'
+                ? 'bg-emerald-950/20 text-emerald-300 border-emerald-900/30'
+                : bannerMsg.type === 'error'
+                  ? 'bg-rose-950/20 text-rose-300 border-rose-900/30'
+                  : 'bg-indigo-950/20 text-indigo-300 border-indigo-900/30'
+            }`}
+          >
             {bannerMsg.type === 'error' ? (
               <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
             ) : (
@@ -125,11 +159,12 @@ export default function AuthDemoView() {
         <div className="p-6">
           {authStep === 'credentials' ? (
             <form onSubmit={handleCredentialsSubmit} className="space-y-4 font-sans">
-              
               {/* Optional Name for registration */}
               {formType === 'register' && (
                 <div className="space-y-1">
-                  <label className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest">Full Name</label>
+                  <label className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest">
+                    Full Name
+                  </label>
                   <div className="relative">
                     <User className="absolute left-3 top-3.5 h-4 w-4 text-slate-500" />
                     <input
@@ -145,7 +180,9 @@ export default function AuthDemoView() {
 
               {/* Email entry key */}
               <div className="space-y-1">
-                <label className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest">Email Address</label>
+                <label className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest">
+                  Email Address
+                </label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3.5 h-4 w-4 text-slate-500" />
                   <input
@@ -161,11 +198,18 @@ export default function AuthDemoView() {
               {/* Password credentials key */}
               <div className="space-y-1">
                 <div className="flex justify-between items-center">
-                  <label className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest">Access Password</label>
+                  <label className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest">
+                    Access Password
+                  </label>
                   {formType === 'login' && (
                     <button
                       type="button"
-                      onClick={() => setBannerMsg({ type: 'info', text: 'Secure reset token transmitted to developer CLI.' })}
+                      onClick={() =>
+                        setBannerMsg({
+                          type: 'info',
+                          text: 'Secure reset token transmitted to developer CLI.',
+                        })
+                      }
                       className="text-[10px] text-emerald-450 hover:underline font-semibold"
                     >
                       Forgot?
@@ -190,8 +234,14 @@ export default function AuthDemoView() {
                 <div className="p-3 bg-slate-950 border border-[#1e293b] rounded-lg text-[10px] text-slate-400 flex items-start gap-2">
                   <Info className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-bold text-white">Interactive Sandbox Passphrase:</span><br />
-                    Use password <code className="text-emerald-400 bg-slate-900 px-1 py-0.5 rounded">AdminFortifySecur3</code> to test the Multi-Factor and success flows. Try incorrect passwords to witness brute-force lockout guards.
+                    <span className="font-bold text-white">Interactive Sandbox Passphrase:</span>
+                    <br />
+                    Use password{' '}
+                    <code className="text-emerald-400 bg-slate-900 px-1 py-0.5 rounded">
+                      AdminFortifySecur3
+                    </code>{' '}
+                    to test the Multi-Factor and success flows. Try incorrect passwords to witness
+                    brute-force lockout guards.
                   </div>
                 </div>
               )}
@@ -215,23 +265,30 @@ export default function AuthDemoView() {
                   }}
                   className="text-[10px] text-slate-400 hover:text-white underline font-mono"
                 >
-                  {formType === 'login' ? 'Create new tenant workspace user' : 'Return to secure gateway login'}
+                  {formType === 'login'
+                    ? 'Create new tenant workspace user'
+                    : 'Return to secure gateway login'}
                 </button>
               </div>
-
             </form>
           ) : authStep === 'mfa' ? (
             <form onSubmit={handleMfaSubmit} className="space-y-4 font-sans">
-              
               <div className="p-4 bg-slate-950 border border-[#1e293b] rounded-xl text-center space-y-2">
                 <Smartphone className="h-7 w-7 text-emerald-400 mx-auto animate-bounce" />
-                <h4 className="text-xs font-bold text-white uppercase tracking-wider font-mono">Step-Up MFA Required</h4>
-                <p className="text-[10px] text-slate-400 leading-normal">Enter the 6-digit dynamic key generated on your physical authenticator device core.</p>
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
+                  Step-Up MFA Required
+                </h4>
+                <p className="text-[10px] text-slate-400 leading-normal">
+                  Enter the 6-digit dynamic key generated on your physical authenticator device
+                  core.
+                </p>
               </div>
 
               {/* MFA Dynamic Verification field */}
               <div className="space-y-1">
-                <label className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest text-center block">6-DIGIT VERIFICATION CODE</label>
+                <label className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest text-center block">
+                  6-DIGIT VERIFICATION CODE
+                </label>
                 <input
                   type="text"
                   maxLength={6}
@@ -246,7 +303,10 @@ export default function AuthDemoView() {
               <div className="p-3 bg-slate-950 border border-[#1e293b] rounded-lg text-[10px] text-slate-400 flex items-start gap-2">
                 <Info className="h-4 w-4 text-[#10b981] shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-bold text-white">TOTP Simulation:</span> Enter simulation code <code className="text-emerald-400 bg-slate-900 px-1 py-0.5 rounded">120612</code> to unlock the final enterprise success view.
+                  <span className="font-bold text-white">TOTP Simulation:</span> Enter simulation
+                  code{' '}
+                  <code className="text-emerald-400 bg-slate-900 px-1 py-0.5 rounded">120612</code>{' '}
+                  to unlock the final enterprise success view.
                 </div>
               </div>
 
@@ -267,7 +327,6 @@ export default function AuthDemoView() {
                   Abstain and return to credential gateway
                 </button>
               </div>
-
             </form>
           ) : (
             /* Authentication Complete */
@@ -276,16 +335,33 @@ export default function AuthDemoView() {
                 ✓
               </div>
               <div className="space-y-1">
-                <h4 className="text-base font-extrabold text-white">Session Securely Established!</h4>
-                <p className="text-xs text-slate-400">Tokens were compiled inside compute containers, routing cookie footprints safely.</p>
+                <h4 className="text-base font-extrabold text-white">
+                  Session Securely Established!
+                </h4>
+                <p className="text-xs text-slate-400">
+                  Tokens were compiled inside compute containers, routing cookie footprints safely.
+                </p>
               </div>
 
               <div className="p-4 bg-slate-950 border border-[#1e293b] rounded-xl text-left font-mono text-[10px] space-y-1.5 leading-normal">
-                <div className="text-emerald-300 font-bold border-b border-[#1e293b] pb-1.5 uppercase">Retrieved Token Specs:</div>
-                <div><span className="text-slate-500">Subject:</span> usr_4480e_fba02</div>
-                <div><span className="text-slate-500">Claims Scope:</span> <span className="text-rose-400 bg-rose-950/40 px-1 rounded font-normal font-sans uppercase">USER</span></div>
-                <div><span className="text-slate-500">Security JTI:</span> user_sess_90251ff821ad</div>
-                <div><span className="text-slate-500">Access Expiry:</span> 15 Minutes (Rotating)</div>
+                <div className="text-emerald-300 font-bold border-b border-[#1e293b] pb-1.5 uppercase">
+                  Retrieved Token Specs:
+                </div>
+                <div>
+                  <span className="text-slate-500">Subject:</span> usr_4480e_fba02
+                </div>
+                <div>
+                  <span className="text-slate-500">Claims Scope:</span>{' '}
+                  <span className="text-rose-400 bg-rose-950/40 px-1 rounded font-normal font-sans uppercase">
+                    USER
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-500">Security JTI:</span> user_sess_90251ff821ad
+                </div>
+                <div>
+                  <span className="text-slate-500">Access Expiry:</span> 15 Minutes (Rotating)
+                </div>
               </div>
 
               <button
@@ -297,9 +373,7 @@ export default function AuthDemoView() {
             </div>
           )}
         </div>
-
       </div>
-
     </div>
   );
 }

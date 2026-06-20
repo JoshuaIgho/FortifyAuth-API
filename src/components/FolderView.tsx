@@ -4,7 +4,9 @@ import { FileNode } from '../types';
 import { Folder, File, Code2, Copy, Check, Info } from 'lucide-react';
 
 export default function FolderView() {
-  const [selectedFilePath, setSelectedFilePath] = useState<string>('/src/services/token.service.ts');
+  const [selectedFilePath, setSelectedFilePath] = useState<string>(
+    '/src/services/token.service.ts',
+  );
   const [copied, setCopied] = useState<boolean>(false);
 
   // Helper function to search for a file in the recursive tree structure
@@ -53,9 +55,13 @@ export default function FolderView() {
           }`}
         >
           {isFolder ? (
-            <Folder className={`h-4 w-4 shrink-0 ${isOpen ? 'text-[#10b981] fill-emerald-950/35' : 'text-slate-500'}`} />
+            <Folder
+              className={`h-4 w-4 shrink-0 ${isOpen ? 'text-[#10b981] fill-emerald-950/35' : 'text-slate-500'}`}
+            />
           ) : (
-            <File className={`h-4 w-4 shrink-0 ${isCurrentFile ? 'text-[#10b981]' : 'text-slate-500'}`} />
+            <File
+              className={`h-4 w-4 shrink-0 ${isCurrentFile ? 'text-[#10b981]' : 'text-slate-500'}`}
+            />
           )}
           <span className="truncate">{node.name}</span>
         </button>
@@ -80,7 +86,9 @@ export default function FolderView() {
             <Code2 className="h-4.5 w-4.5 text-[#10b981]" />
             <span>Folder Structure</span>
           </h3>
-          <p className="text-[10px] text-slate-400 font-sans mt-2">Select a folder or source file to inspect its reference blueprint.</p>
+          <p className="text-[10px] text-slate-400 font-sans mt-2">
+            Select a folder or source file to inspect its reference blueprint.
+          </p>
         </div>
         <div className="flex-grow overflow-y-auto py-2 bg-slate-950/10">
           <RenderTree node={folderStructureData} depth={0} />
@@ -98,7 +106,9 @@ export default function FolderView() {
                   <span className="text-[10px] uppercase bg-emerald-950/65 text-[#10b981] border border-[#10b981]/25 px-2 py-0.5 rounded font-mono font-bold">
                     {selectedNode.type}
                   </span>
-                  <h4 className="font-extrabold text-white text-xs font-mono">{selectedNode.name}</h4>
+                  <h4 className="font-extrabold text-white text-xs font-mono">
+                    {selectedNode.name}
+                  </h4>
                 </div>
                 <p className="text-xs text-slate-450 font-sans mt-1">{selectedNode.description}</p>
               </div>
@@ -131,9 +141,13 @@ export default function FolderView() {
                 <div className="h-full flex flex-col items-center justify-center text-center text-slate-550 space-y-4 max-w-sm mx-auto p-4 select-none">
                   <Info className="h-8 w-8 text-[#10b981]/50 animate-bounce" />
                   <div>
-                    <h5 className="font-bold text-white text-xs font-sans">Directories Repository</h5>
+                    <h5 className="font-bold text-white text-xs font-sans">
+                      Directories Repository
+                    </h5>
                     <p className="text-[11px] text-slate-400 mt-2 leading-relaxed font-sans">
-                      This folder exists to index and modularize FortifyAuth business logics perfectly. Select code files inside directories to review secure code implementations.
+                      This folder exists to index and modularize FortifyAuth business logics
+                      perfectly. Select code files inside directories to review secure code
+                      implementations.
                     </p>
                   </div>
                 </div>
@@ -144,7 +158,9 @@ export default function FolderView() {
           <div className="flex-grow flex flex-col items-center justify-center text-center text-slate-500 p-6 select-none">
             <Info className="h-8 w-8 text-slate-600" />
             <h4 className="font-bold mt-2">File not selected</h4>
-            <p className="text-xs text-slate-500 mt-1">Please explore folders of project in sidebar to review operational codes.</p>
+            <p className="text-xs text-slate-500 mt-1">
+              Please explore folders of project in sidebar to review operational codes.
+            </p>
           </div>
         )}
       </div>

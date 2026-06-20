@@ -6,8 +6,10 @@ export const securityItemsList: SecurityCheckItem[] = [
     title: 'Password Hashing with Argon2id',
     category: 'Cryptography',
     severity: 'CRITICAL',
-    vulnerability: 'Weak or fast hashing algorithms (MD5, SHA256, BCrypt with low cost) are vulnerable to high-speed offline GPU brute-force calculation.',
-    bestPractice: 'Always use Argon2id (specifically argon2id profile, not argon2i or argon2d) which is memory-hard, time-hard, and parallel-hard.',
+    vulnerability:
+      'Weak or fast hashing algorithms (MD5, SHA256, BCrypt with low cost) are vulnerable to high-speed offline GPU brute-force calculation.',
+    bestPractice:
+      'Always use Argon2id (specifically argon2id profile, not argon2i or argon2d) which is memory-hard, time-hard, and parallel-hard.',
     codeSnippet: `import argon2 from 'argon2';
 
 // Standard OWASP recommended Argon2id parameters
@@ -30,8 +32,10 @@ export async function verifyPassword(hash: string, password: string): Promise<bo
     title: 'Secure httpOnly Refresh Token Cookies',
     category: 'Session',
     severity: 'CRITICAL',
-    vulnerability: 'Storing Refresh Tokens in localStorage makes them completely vulnerable to direct exfiltration via Cross-Site Scripting (XSS) malware injects.',
-    bestPractice: 'Always set Refresh Tokens inside cookies flagging HttpOnly, Secure, SameSite=Strict and Path constraints.',
+    vulnerability:
+      'Storing Refresh Tokens in localStorage makes them completely vulnerable to direct exfiltration via Cross-Site Scripting (XSS) malware injects.',
+    bestPractice:
+      'Always set Refresh Tokens inside cookies flagging HttpOnly, Secure, SameSite=Strict and Path constraints.',
     codeSnippet: `// Express response configuration
 res.cookie('refreshToken', plainRefreshToken, {
   httpOnly: true,                 // Block javascript exfiltration (XSS)
@@ -46,8 +50,10 @@ res.cookie('refreshToken', plainRefreshToken, {
     title: 'Refresh Token Rotation & Breach Detection',
     category: 'Session',
     severity: 'CRITICAL',
-    vulnerability: 'If an operator exfiltrates a refresh token, they obtain silent, continuous api access indefinitely.',
-    bestPractice: 'During token refresh, invalidate both access/refresh tokens, emit a brand new pair, and structure parent-replacement relationships. If a previous invalid token is re-submitted, detect a breach and terminate all user sessions immediately.',
+    vulnerability:
+      'If an operator exfiltrates a refresh token, they obtain silent, continuous api access indefinitely.',
+    bestPractice:
+      'During token refresh, invalidate both access/refresh tokens, emit a brand new pair, and structure parent-replacement relationships. If a previous invalid token is re-submitted, detect a breach and terminate all user sessions immediately.',
     codeSnippet: `// Inside Token rotation logic:
 if (existingRecord.revokedAt) {
   // CRITICAL breach alert! This suggests token has been replayed by an intruder.
@@ -63,8 +69,10 @@ if (existingRecord.revokedAt) {
     title: 'Defensive HTTP headers with Helmet.js',
     category: 'Network',
     severity: 'HIGH',
-    vulnerability: 'Absence of defensive headers permits Iframe clickjacking, mime sniffing, cross-site leaks, and missing SSL enforcement.',
-    bestPractice: 'Implement Helmet middleware. Force HTTP Strict Transport Security (HSTS) and a robust Content Security Policy (CSP).',
+    vulnerability:
+      'Absence of defensive headers permits Iframe clickjacking, mime sniffing, cross-site leaks, and missing SSL enforcement.',
+    bestPractice:
+      'Implement Helmet middleware. Force HTTP Strict Transport Security (HSTS) and a robust Content Security Policy (CSP).',
     codeSnippet: `import helmet from 'helmet';
 import express from 'express';
 
@@ -90,8 +98,10 @@ app.use(helmet({
     title: 'Granular API Rate Limiting',
     category: 'Network',
     severity: 'HIGH',
-    vulnerability: 'Uncapped public routers are highly vulnerable to credential stuffing bots, DOS volume dumps, and brute-force password guessing.',
-    bestPractice: 'Enforce distinct sliding-window limits using Redis: strict caps on authorization attempt paths (e.g. 5 attempts per IP per 10 mins) and generous caps for general routes.',
+    vulnerability:
+      'Uncapped public routers are highly vulnerable to credential stuffing bots, DOS volume dumps, and brute-force password guessing.',
+    bestPractice:
+      'Enforce distinct sliding-window limits using Redis: strict caps on authorization attempt paths (e.g. 5 attempts per IP per 10 mins) and generous caps for general routes.',
     codeSnippet: `import rateLimit from 'express-rate-limit';
 import RedisStore from 'rate-limit-redis';
 import { redisClient } from '../config/redis';
@@ -112,8 +122,10 @@ export const authRateLimiter = rateLimit({
     title: 'One-Way Hash on Database Tokens',
     category: 'Database',
     severity: 'CRITICAL',
-    vulnerability: 'Storing raw, plaintext refresh and recovery tokens exposes the system to active takeover if the database is read-compromised via SQLi or dump files.',
-    bestPractice: 'Never store plain tokens in databases. Always write the SHA-256 hash representation of the token in records; validate queries by hashing incoming payload parameters to lookup rows.',
+    vulnerability:
+      'Storing raw, plaintext refresh and recovery tokens exposes the system to active takeover if the database is read-compromised via SQLi or dump files.',
+    bestPractice:
+      'Never store plain tokens in databases. Always write the SHA-256 hash representation of the token in records; validate queries by hashing incoming payload parameters to lookup rows.',
     codeSnippet: `import crypto from 'crypto';
 
 // Token generation:
@@ -132,8 +144,10 @@ const record = await prisma.refreshToken.findUnique({
     title: 'Sterilizing Log Sanitization templates',
     category: 'Logging',
     severity: 'MEDIUM',
-    vulnerability: 'Logging plaintext raw request payloads can accidentally write sensitive passwords, OTPs, recovery links, or headers to storage files.',
-    bestPractice: 'Enforce custom express middleware that parses request bodies and sterilizes passwords or authorization parameters before writing logs.',
+    vulnerability:
+      'Logging plaintext raw request payloads can accidentally write sensitive passwords, OTPs, recovery links, or headers to storage files.',
+    bestPractice:
+      'Enforce custom express middleware that parses request bodies and sterilizes passwords or authorization parameters before writing logs.',
     codeSnippet: `export function sanitizePayloadForLogs(payload: any) {
   const sanitized = { ...payload };
   const sensitiveKeys = ['password', 'newPassword', 'oldPassword', 'token', 'authorization'];
@@ -146,6 +160,6 @@ const record = await prisma.refreshToken.findUnique({
     }
   }
   return sanitized;
-}`
-  }
+}`,
+  },
 ];
