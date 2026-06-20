@@ -83,7 +83,7 @@ export const apiEndpointsList: ApiEndpoint[] = [
           message:
             'Registration successful! Please check your inbox for a registration verification mail.',
           user: {
-            id: 'fa993e11-e8d1-4171-872a-4a87268d83c2',
+            id: '<USER_ID>',
             email: 'newuser@example.com',
             role: 'USER',
             isEmailVerified: false,

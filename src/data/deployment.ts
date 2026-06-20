@@ -123,7 +123,7 @@ services:
       - SMTP_HOST=smtp.mailtrap.io
       - SMTP_PORT=2525
       - SMTP_USER=your_user_id
-      - SMTP_PASS=your_password
+      - SMTP_PASS=<PASSWORD>
       - SMTP_FROM=security@fortifyauth.com
     depends_on:
       postgres_db:
