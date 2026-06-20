@@ -7,7 +7,7 @@ export default function DatabaseView() {
   const [selectedModelName, setSelectedModelName] = useState<string>('User');
   const [copied, setCopied] = useState<boolean>(false);
 
-  const selectedModel = dbModels.find(m => m.name === selectedModelName) || dbModels[0];
+  const selectedModel = dbModels.find((m) => m.name === selectedModelName) || dbModels[0];
 
   const handleCopy = () => {
     navigator.clipboard.writeText(prismaSchemaCode);
@@ -20,8 +20,12 @@ export default function DatabaseView() {
       {/* Tab Switcher Bar */}
       <div className="bg-[#0f172a] border-b border-[#1e293b] px-6 py-4 flex items-center justify-between">
         <div>
-          <h2 className="text-base font-semibold tracking-tight text-white">Database Models & Entity Relations (ERD)</h2>
-          <p className="text-xs text-slate-400 mt-0.5">Explore PostgreSQL database relational modeling configured in Prisma.</p>
+          <h2 className="text-base font-semibold tracking-tight text-white">
+            Database Models & Entity Relations (ERD)
+          </h2>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Explore PostgreSQL database relational modeling configured in Prisma.
+          </p>
         </div>
         <div className="flex space-x-1 bg-slate-950 p-1 rounded-lg border border-[#1e293b]">
           <button
@@ -64,22 +68,31 @@ export default function DatabaseView() {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                      <Database className={`h-4.5 w-4.5 ${selectedModelName === model.name ? 'text-[#10b981]' : 'text-slate-500'}`} />
+                      <Database
+                        className={`h-4.5 w-4.5 ${selectedModelName === model.name ? 'text-[#10b981]' : 'text-slate-500'}`}
+                      />
                       <span className="font-bold text-white text-xs font-sans">{model.name}</span>
                     </div>
                     <span className="text-[10px] bg-slate-950 px-2 py-0.5 rounded border border-[#1e293b] text-slate-400 font-mono">
                       {model.fields.length} columns
                     </span>
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-2 line-clamp-2 leading-relaxed font-sans">{model.description}</p>
-                  
+                  <p className="text-[11px] text-slate-400 mt-2 line-clamp-2 leading-relaxed font-sans">
+                    {model.description}
+                  </p>
+
                   {/* Visual ERD Connections Indicator */}
                   <div className="mt-3 pt-2.5 border-t border-[#1e293b]/60 flex flex-wrap gap-1.55">
-                    {model.fields.filter(f => f.relationTo).map((f) => (
-                      <span key={f.name} className="px-1.5 py-0.5 bg-emerald-950/40 text-emerald-400 border border-[#10b981]/25 text-[9px] rounded font-mono">
-                        → {f.relationTo}
-                      </span>
-                    ))}
+                    {model.fields
+                      .filter((f) => f.relationTo)
+                      .map((f) => (
+                        <span
+                          key={f.name}
+                          className="px-1.5 py-0.5 bg-emerald-950/40 text-emerald-400 border border-[#10b981]/25 text-[9px] rounded font-mono"
+                        >
+                          → {f.relationTo}
+                        </span>
+                      ))}
                   </div>
                 </button>
               ))}
@@ -87,27 +100,43 @@ export default function DatabaseView() {
 
             {/* Visual ERD Flow Mapping representation */}
             <div className="bg-[#0f172a] rounded-xl border border-[#1e293b] p-6 shadow-2xl">
-              <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest font-mono mb-4">Relational Cascade Strategy Overview</h4>
+              <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest font-mono mb-4">
+                Relational Cascade Strategy Overview
+              </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-center">
                 <div className="p-3 bg-rose-950/20 rounded-xl border border-rose-900/40">
                   <div className="font-bold text-rose-250 text-xs font-sans">User (Delete)</div>
                   <div className="text-[10px] text-[#f43f5e] font-mono mt-1">CASCADE DELETE ↴</div>
-                  <p className="text-[10px] text-slate-400 mt-1.5 font-sans">Sessions, RefreshTokens, PasswordResetTokens, and EmailVerifications are deleted automatically to protect privacy.</p>
+                  <p className="text-[10px] text-slate-400 mt-1.5 font-sans">
+                    Sessions, RefreshTokens, PasswordResetTokens, and EmailVerifications are deleted
+                    automatically to protect privacy.
+                  </p>
                 </div>
                 <div className="p-3 bg-amber-950/10 rounded-xl border border-amber-900/30">
                   <div className="font-bold text-amber-300 text-xs font-sans">User (Delete)</div>
                   <div className="text-[10px] text-amber-500 font-mono mt-1">SET NULL ↴</div>
-                  <p className="text-[10px] text-slate-400 mt-1.5 font-sans">AuditLog rows retain user-agent and IP histories, but clear target identities to keep log history secure and uncompromised.</p>
+                  <p className="text-[10px] text-slate-400 mt-1.5 font-sans">
+                    AuditLog rows retain user-agent and IP histories, but clear target identities to
+                    keep log history secure and uncompromised.
+                  </p>
                 </div>
                 <div className="p-3 bg-emerald-950/15 rounded-xl border border-emerald-900/30">
-                  <div className="font-bold text-emerald-200 text-xs font-sans">Refresh Rotation</div>
+                  <div className="font-bold text-emerald-200 text-xs font-sans">
+                    Refresh Rotation
+                  </div>
                   <div className="text-[10px] text-[#10b981] font-mono mt-1">UNIQUE INDEX ↴</div>
-                  <p className="text-[10px] text-slate-400 mt-1.5 font-sans">Searching tokenHash hashes targets is highly optimized, allowing rapid validations inside critical login endpoints.</p>
+                  <p className="text-[10px] text-slate-400 mt-1.5 font-sans">
+                    Searching tokenHash hashes targets is highly optimized, allowing rapid
+                    validations inside critical login endpoints.
+                  </p>
                 </div>
                 <div className="p-3 bg-blue-950/20 rounded-xl border border-blue-900/30">
                   <div className="font-bold text-blue-200 text-xs font-sans">Secure OTPs</div>
                   <div className="text-[10px] text-[#3b82f6] font-mono mt-1">TTL EXPIRY ↴</div>
-                  <p className="text-[10px] text-slate-400 mt-1.5 font-sans">All verification structures enforce short-lived deadlines (e.g. 1 hour for forgot-password inputs) before being purged.</p>
+                  <p className="text-[10px] text-slate-400 mt-1.5 font-sans">
+                    All verification structures enforce short-lived deadlines (e.g. 1 hour for
+                    forgot-password inputs) before being purged.
+                  </p>
                 </div>
               </div>
             </div>
@@ -120,38 +149,57 @@ export default function DatabaseView() {
                 <Database className="h-4.5 w-4.5" />
                 <h3 className="font-bold text-white text-xs font-sans">Model Inspector</h3>
               </div>
-              <h4 className="text-base font-extrabold text-white font-sans mt-3">{selectedModel.name}</h4>
-              <p className="text-xs text-slate-400 mt-1 leading-normal font-sans">{selectedModel.description}</p>
+              <h4 className="text-base font-extrabold text-white font-sans mt-3">
+                {selectedModel.name}
+              </h4>
+              <p className="text-xs text-slate-400 mt-1 leading-normal font-sans">
+                {selectedModel.description}
+              </p>
             </div>
 
             {/* Model Columns Table */}
             <div className="flex-grow p-6 space-y-5 overflow-y-auto">
               <div className="space-y-3">
-                <h5 className="text-[10px] font-bold text-[#64748b] uppercase tracking-widest font-mono">Columns & Datatypes</h5>
+                <h5 className="text-[10px] font-bold text-[#64748b] uppercase tracking-widest font-mono">
+                  Columns & Datatypes
+                </h5>
                 <div className="space-y-2.5">
                   {selectedModel.fields.map((field) => (
-                    <div key={field.name} className="p-3 bg-slate-950/40 rounded-lg border border-[#1e293b] flex flex-col space-y-1">
+                    <div
+                      key={field.name}
+                      className="p-3 bg-slate-950/40 rounded-lg border border-[#1e293b] flex flex-col space-y-1"
+                    >
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-white font-mono">{field.name}</span>
                         <span className="text-[9px] font-mono font-semibold text-emerald-400 bg-emerald-950/80 px-1.5 py-0.5 rounded border border-emerald-900/30">
                           {field.type}
                         </span>
                       </div>
-                      <p className="text-[10px] text-slate-400 font-sans leading-normal mt-1">{field.description}</p>
-                      
+                      <p className="text-[10px] text-slate-400 font-sans leading-normal mt-1">
+                        {field.description}
+                      </p>
+
                       {/* Column Modifiers */}
                       <div className="flex flex-wrap gap-1 mt-1.5">
                         {field.isPrimary && (
-                          <span className="px-1.5 py-0.5 bg-rose-950/50 text-[#f43f5e] border border-rose-900/30 text-[8px] font-bold font-mono rounded">PK / PRIMARY KEY</span>
+                          <span className="px-1.5 py-0.5 bg-rose-950/50 text-[#f43f5e] border border-rose-900/30 text-[8px] font-bold font-mono rounded">
+                            PK / PRIMARY KEY
+                          </span>
                         )}
                         {field.isUnique && (
-                          <span className="px-1.5 py-0.5 bg-amber-950/50 text-amber-500 border border-amber-900/30 text-[8px] font-bold font-mono rounded">UNIQUE</span>
+                          <span className="px-1.5 py-0.5 bg-amber-950/50 text-amber-500 border border-amber-900/30 text-[8px] font-bold font-mono rounded">
+                            UNIQUE
+                          </span>
                         )}
                         {field.isNullable && (
-                          <span className="px-1.5 py-0.5 bg-slate-950 text-slate-400 border border-[#1e293b] text-[8px] font-bold font-mono rounded">NULLABLE</span>
+                          <span className="px-1.5 py-0.5 bg-slate-950 text-slate-400 border border-[#1e293b] text-[8px] font-bold font-mono rounded">
+                            NULLABLE
+                          </span>
                         )}
                         {field.relationTo && (
-                          <span className="px-1.5 py-0.5 bg-blue-950/50 text-blue-400 border border-blue-950/10 text-[8px] font-bold font-mono rounded">RELATION TO {field.relationTo}</span>
+                          <span className="px-1.5 py-0.5 bg-blue-950/50 text-blue-400 border border-blue-950/10 text-[8px] font-bold font-mono rounded">
+                            RELATION TO {field.relationTo}
+                          </span>
                         )}
                       </div>
                     </div>
@@ -168,7 +216,10 @@ export default function DatabaseView() {
                   </h5>
                   <div className="space-y-2">
                     {selectedModel.indexes.map((idx, index) => (
-                      <div key={index} className="text-[10px] text-slate-350 font-mono bg-[#020617] p-2.5 rounded border border-[#1e293b] leading-normal">
+                      <div
+                        key={index}
+                        className="text-[10px] text-slate-350 font-mono bg-[#020617] p-2.5 rounded border border-[#1e293b] leading-normal"
+                      >
                         {idx}
                       </div>
                     ))}

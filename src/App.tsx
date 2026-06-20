@@ -48,15 +48,23 @@ export default function App() {
   };
 
   return (
-    <div id="app-root-container" className="flex h-screen w-screen overflow-hidden bg-[#020617] text-slate-100 font-sans antialiased">
+    <div
+      id="app-root-container"
+      className="flex h-screen w-screen overflow-hidden bg-[#020617] text-slate-100 font-sans antialiased"
+    >
       {/* Navigation list */}
       <Sidebar currentTab={currentTab} setTab={setCurrentTab} />
 
       {/* Main interactive viewport workspace */}
-      <main id="main-content-area" className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#020617]">
-        
+      <main
+        id="main-content-area"
+        className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#020617]"
+      >
         {/* Dynamic header */}
-        <header id="app-workspace-header" className="h-[64px] border-b border-[#1e293b] bg-[#0f172a] px-6 flex items-center justify-between shrink-0">
+        <header
+          id="app-workspace-header"
+          className="h-[64px] border-b border-[#1e293b] bg-[#0f172a] px-6 flex items-center justify-between shrink-0"
+        >
           <div className="flex items-center space-x-2">
             <span className="h-2 w-2 bg-[#10b981] rounded-full animate-pulse shadow-[0_0_8px_#10b981]" />
             <h2 className="text-xs font-bold font-mono tracking-widest text-[#94a3b8] uppercase">
@@ -85,7 +93,6 @@ export default function App() {
           <div>FortifyAuth Security Engine &bull; Built for High Availability</div>
           <div className="font-mono">Uptime: 99.998% | LATENCY: 24ms</div>
         </footer>
-
       </main>
     </div>
   );

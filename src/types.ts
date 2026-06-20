@@ -41,7 +41,13 @@ export interface ApiEndpoint {
   summary: string;
   description: string;
   tags: string[];
-  requestHeaders?: { name: string; type: string; required: boolean; description: string; defaultValue?: string }[];
+  requestHeaders?: {
+    name: string;
+    type: string;
+    required: boolean;
+    description: string;
+    defaultValue?: string;
+  }[];
   requestBody?: {
     contentType: string;
     schema: Record<string, { type: string; required: boolean; description: string; example: any }>;
