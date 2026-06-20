@@ -139,8 +139,8 @@ services:
     image: postgres:15-alpine
     container_name: postgres_db_prod
     environment:
-      - POSTGRES_USER=fortify_user
-      - POSTGRES_PASSWORD=fortify_db_password
+      - POSTGRES_USER=<USER>
+      - POSTGRES_PASSWORD=<PASSWORD>
       - POSTGRES_DB=fortify_database
     ports:
       - "5432:5432"
@@ -159,13 +159,13 @@ services:
   redis_cache:
     image: redis:7-alpine
     container_name: redis_cache_prod
-    command: redis-server --requirepass redis_secret_pass
+    command: redis-server --requirepass <PASSWORD>
     ports:
       - "6379:6379"
     volumes:
       - redisdata:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "redis_secret_pass", "ping"]
+      test: ["CMD", "redis-cli", "-a", "<PASSWORD>", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
