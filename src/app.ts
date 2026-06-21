@@ -3,10 +3,14 @@ import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
+import swaggerUi from 'swagger-ui-express';
 import { env } from './config/env.config';
 import routes from './routes';
 import { errorConverter, errorHandler } from './middlewares/error.middleware';
 import { NotFoundError } from './utils/api-error';
+import { swaggerSpec } from './docs/swagger/swagger.config';
+import { generalRateLimiter } from './middlewares/rateLimit.middleware';
+import { sanitize } from './middlewares/sanitize.middleware';
 
 const app: Express = express();
 
@@ -17,6 +21,12 @@ app.use(helmet());
 if (env.NODE_ENV !== 'test') {
   app.use(morgan('dev'));
 }
+
+// Rate limiting
+app.use(generalRateLimiter);
+
+// Input sanitization
+app.use(sanitize);
 
 // Parse json request body
 app.use(express.json());
@@ -34,6 +44,9 @@ app.use(
     credentials: true,
   }),
 );
+
+// Swagger Documentation
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // API routes
 app.use('/', routes);

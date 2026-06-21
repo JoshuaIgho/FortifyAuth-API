@@ -12,4 +12,10 @@ export class AuditRepository {
       orderBy: { createdAt: 'desc' },
     });
   }
+
+  public static async findAll(): Promise<AuditLog[]> {
+    return prisma.auditLog.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+  }
 }
