@@ -1,5 +1,5 @@
 import { Server } from 'http';
-import app from './app';
+import app from './app.js';
 import { env } from './config/env.config';
 import { logger } from './utils/logger';
 

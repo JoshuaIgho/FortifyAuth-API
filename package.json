@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
     "server:dev": "tsx watch src/server.ts",
-    "build": "vite build",
+    "build": "vite build && esbuild src/server.ts --resolve-extensions=.ts,.js --bundle --platform=node --format=esm --outfile=dist/server.js --external:node:path --external:node:url --packages=external",
+    "start": "node dist/server.js",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "eslint 'src/**/*.{ts,tsx}'",
@@ -59,7 +60,7 @@
     "@typescript-eslint/eslint-plugin": "^8.26.0",
     "@typescript-eslint/parser": "^8.26.0",
     "autoprefixer": "^10.4.21",
-    "esbuild": "^0.25.0",
+    "esbuild": "^0.25.12",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",

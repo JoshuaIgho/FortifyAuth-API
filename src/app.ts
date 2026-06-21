@@ -1,9 +1,12 @@
+import path from "path";
+import { fileURLToPath } from "url";
 import express, { Express } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
+import { StatusCodes } from 'http-status-codes';
 import { env } from './config/env.config';
 import routes from './routes';
 import { errorConverter, errorHandler } from './middlewares/error.middleware';
@@ -21,6 +24,16 @@ app.use(helmet());
 if (env.NODE_ENV !== 'test') {
   app.use(morgan('dev'));
 }
+
+// Health check
+app.get('/health', (req, res) => {
+  res.status(StatusCodes.OK).json({
+    status: 'success',
+    message: 'FortifyAuth API is healthy and operational',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0',
+  });
+});
 
 // Rate limiting
 app.use(generalRateLimiter);
@@ -50,6 +63,19 @@ app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // API routes
 app.use('/', routes);
+
+// Serve static frontend assets in production
+if (env.NODE_ENV === 'production') {
+  // Use process.cwd() as a fallback for __dirname in production if needed,
+  // or use the path relative to the process start location.
+  const publicPath = path.join(process.cwd(), 'dist');
+
+  app.use(express.static(publicPath));
+
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(publicPath, 'index.html'));
+  });
+}
 
 // Send back a 404 error for any unknown api request
 app.use((req, res, next) => {
