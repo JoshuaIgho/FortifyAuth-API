@@ -3,9 +3,12 @@ import { AuditAction, User } from '@prisma/client';
 import { UserRepository } from '../repositories/user.repository';
 import { TokenRepository } from '../repositories/token.repository';
 import { AuditRepository } from '../repositories/audit.repository';
+import { VerificationTokenRepository } from '../repositories/verification-token.repository';
+import { PasswordResetTokenRepository } from '../repositories/password-reset-token.repository';
 import { TokenService } from './token.service';
+import { EmailService } from './email.service';
 import { hashPassword, verifyPassword } from '../utils/hash.util';
-import { UnauthorizedError, ConflictError } from '../utils/api-error';
+import { UnauthorizedError, ConflictError, BadRequestError } from '../utils/api-error';
 
 export class AuthService {
   /**
@@ -23,6 +26,15 @@ export class AuthService {
       passwordHash,
     });
 
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    await VerificationTokenRepository.create({
+      token: verificationToken,
+      user: { connect: { id: user.id } },
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+    });
+
+    await EmailService.sendVerificationEmail(user.email, verificationToken);
+
     await AuditRepository.create({
       action: AuditAction.USER_REGISTERED,
       user: { connect: { id: user.id } },
@@ -30,14 +42,32 @@ export class AuthService {
       userAgent: userAgent,
     });
 
-    // TODO: Create and send verification token
-
     return {
       id: user.id,
       email: user.email,
       role: user.role,
       isEmailVerified: user.isEmailVerified,
     };
+  }
+
+  /**
+   * Verify email
+   */
+  public static async verifyEmail(token: string, ip: string, userAgent: string) {
+    const tokenRecord = await VerificationTokenRepository.findByToken(token);
+    if (!tokenRecord || tokenRecord.expiresAt < new Date()) {
+      throw new BadRequestError('Invalid or expired verification token');
+    }
+
+    await UserRepository.update(tokenRecord.userId, { isEmailVerified: true });
+    await VerificationTokenRepository.deleteById(tokenRecord.id);
+
+    await AuditRepository.create({
+      action: AuditAction.EMAIL_VERIFIED,
+      user: { connect: { id: tokenRecord.userId } },
+      ipAddress: ip,
+      userAgent: userAgent,
+    });
   }
 
   /**
@@ -49,13 +79,16 @@ export class AuthService {
       throw new UnauthorizedError('Invalid credentials');
     }
 
+    if (!user.isEmailVerified) {
+      throw new UnauthorizedError('Please verify your email before logging in');
+    }
+
     const payload = { userId: user.id, email: user.email, role: user.role };
     const accessToken = TokenService.generateAccessToken(payload);
     const refreshToken = TokenService.generateRefreshToken(payload);
 
-    // Hash refresh token for storage
     const refreshTokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
     await TokenRepository.createRefreshToken({
       user: { connect: { id: user.id } },
@@ -106,7 +139,6 @@ export class AuthService {
       throw new UnauthorizedError('Invalid refresh token');
     }
 
-    // Breach detection: If token is revoked, invalidate all user sessions
     if (tokenRecord.revokedAt) {
       await TokenRepository.deleteRefreshTokensByUserId(tokenRecord.userId);
       throw new UnauthorizedError('Security breach detected. All sessions invalidated.');
@@ -117,7 +149,6 @@ export class AuthService {
       throw new UnauthorizedError('Refresh token expired');
     }
 
-    // Since we used include: { user: true } in repository
     const user = (tokenRecord as any).user as User;
     const payload = { userId: user.id, email: user.email, role: user.role };
 
@@ -125,7 +156,6 @@ export class AuthService {
     const newRefreshToken = TokenService.generateRefreshToken(payload);
     const newRefreshTokenHash = crypto.createHash('sha256').update(newRefreshToken).digest('hex');
 
-    // Rotate tokens
     await TokenRepository.updateRefreshToken(tokenRecord.id, {
       revokedAt: new Date(),
       replacedBy: newRefreshTokenHash,
@@ -141,5 +171,59 @@ export class AuthService {
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
     };
+  }
+
+  /**
+   * Forgot password
+   */
+  public static async forgotPassword(email: string, ip: string, userAgent: string) {
+    const user = await UserRepository.findByEmail(email);
+
+    // Security best practice: don't reveal if user exists
+    if (user) {
+      const resetToken = crypto.randomBytes(32).toString('hex');
+      await PasswordResetTokenRepository.create({
+        token: resetToken,
+        user: { connect: { id: user.id } },
+        expiresAt: new Date(Date.now() + 1 * 60 * 60 * 1000), // 1 hour
+      });
+
+      await EmailService.sendPasswordResetEmail(user.email, resetToken);
+
+      await AuditRepository.create({
+        action: AuditAction.PASSWORD_RESET_REQUEST,
+        user: { connect: { id: user.id } },
+        ipAddress: ip,
+        userAgent: userAgent,
+      });
+    }
+  }
+
+  /**
+   * Reset password
+   */
+  public static async resetPassword(
+    token: string,
+    password: string,
+    ip: string,
+    userAgent: string,
+  ) {
+    const tokenRecord = await PasswordResetTokenRepository.findByToken(token);
+    if (!tokenRecord || tokenRecord.expiresAt < new Date()) {
+      throw new BadRequestError('Invalid or expired reset token');
+    }
+
+    const passwordHash = await hashPassword(password);
+    await UserRepository.update(tokenRecord.userId, { passwordHash });
+    await PasswordResetTokenRepository.deleteByUserId(tokenRecord.userId);
+    // Also invalidate all sessions on password change
+    await TokenRepository.deleteRefreshTokensByUserId(tokenRecord.userId);
+
+    await AuditRepository.create({
+      action: AuditAction.PASSWORD_RESET_SUCCESS,
+      user: { connect: { id: tokenRecord.userId } },
+      ipAddress: ip,
+      userAgent: userAgent,
+    });
   }
 }

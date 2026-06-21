@@ -23,6 +23,23 @@ export class AuthController {
     }
   }
 
+  public static async verifyEmail(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { token } = req.query;
+      await AuthService.verifyEmail(
+        token as string,
+        req.ip || 'unknown',
+        req.headers['user-agent'] || 'unknown',
+      );
+      res.status(StatusCodes.OK).json({
+        status: 'success',
+        message: 'Email verified successfully. You can now login.',
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   public static async login(req: Request, res: Response, next: NextFunction) {
     try {
       const { email, password } = req.body;
@@ -88,6 +105,42 @@ export class AuthController {
       res.status(StatusCodes.OK).json({
         status: 'success',
         data: { accessToken },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public static async forgotPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { email } = req.body;
+      await AuthService.forgotPassword(
+        email,
+        req.ip || 'unknown',
+        req.headers['user-agent'] || 'unknown',
+      );
+      res.status(StatusCodes.OK).json({
+        status: 'success',
+        message: 'If an account exists with that email, a password reset link has been sent.',
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public static async resetPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { token } = req.query;
+      const { password } = req.body;
+      await AuthService.resetPassword(
+        token as string,
+        password,
+        req.ip || 'unknown',
+        req.headers['user-agent'] || 'unknown',
+      );
+      res.status(StatusCodes.OK).json({
+        status: 'success',
+        message: 'Password reset successfully. You can now login with your new password.',
       });
     } catch (error) {
       next(error);
