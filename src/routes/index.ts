@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import authRoutes from './v1/auth.routes';
 
 const router = Router();
 
@@ -12,7 +13,6 @@ router.get('/health', (req, res) => {
   });
 });
 
-// v1 routes will be added here
-// router.use('/v1', v1Routes);
+router.use('/api/v1/auth', authRoutes);
 
 export default router;

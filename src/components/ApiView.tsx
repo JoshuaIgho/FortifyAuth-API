@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { apiEndpointsList, simState } from '../data/apiEndpoints';
+import { apiEndpointsList } from '../data/apiEndpoints';
+import { simState, simulationHandlers } from '../docs/examples/simulation';
+import { apiExamples } from '../docs/examples/apiExamples';
 import { ApiEndpoint } from '../types';
 import {
   Send,
@@ -27,7 +29,11 @@ export default function ApiView() {
     if (currentEndpoint.requestBody?.schema) {
       const defaultObj: Record<string, any> = {};
       Object.entries(currentEndpoint.requestBody.schema).forEach(([k, v]) => {
-        defaultObj[k] = v.example;
+        let example = v.example;
+        if (example === '<EMAIL>') example = apiExamples.email;
+        if (example === '<PASSWORD>') example = apiExamples.password;
+        if (example === '<TOKEN>') example = apiExamples.token;
+        defaultObj[k] = example;
       });
       setRequestBodyVal(JSON.stringify(defaultObj, null, 2));
     } else {
@@ -44,7 +50,12 @@ export default function ApiView() {
       }
 
       // Call custom simulator
-      const result = currentEndpoint.simulationHandler(bodyData);
+      const handler = (simulationHandlers as any)[currentEndpoint.id];
+      if (!handler) {
+        throw new Error(`No simulation handler found for endpoint: ${currentEndpoint.id}`);
+      }
+
+      const result = handler(bodyData);
       setLastResponse(result);
 
       // Update global server-mock state trackers
@@ -61,7 +72,8 @@ export default function ApiView() {
   };
 
   const handleFillDemoCreds = (email: string, pass: string) => {
-    const demoPayload = { email, password: pass };
+    const realEmail = email === 'admin@example.com' ? apiExamples.email : email; // In a real app we'd have better logic
+    const demoPayload = { email: realEmail, password: pass };
     setRequestBodyVal(JSON.stringify(demoPayload, null, 2));
   };
 
@@ -178,14 +190,14 @@ export default function ApiView() {
           </h4>
           <div className="space-y-1.5 text-xs">
             <button
-              onClick={() => handleFillDemoCreds('admin@fortify.com', 'Password123!')}
+              onClick={() => handleFillDemoCreds('admin@example.com', 'DUMMY_PASSWORD')}
               className="w-full flex justify-between p-2 rounded border border-[#1e293b] bg-[#020617] hover:bg-slate-900 font-sans text-left text-slate-200 cursor-pointer"
             >
               <span className="text-xs">🔑 Admin Template</span>
               <span className="font-mono text-emerald-400 text-[10px]">ADMIN</span>
             </button>
             <button
-              onClick={() => handleFillDemoCreds('user@fortify.com', 'Password123!')}
+              onClick={() => handleFillDemoCreds('user@example.com', 'DUMMY_PASSWORD')}
               className="w-full flex justify-between p-2 rounded border border-[#1e293b] bg-[#020617] hover:bg-slate-900 font-sans text-left text-slate-200 cursor-pointer"
             >
               <span className="text-xs">🔑 User Template</span>
