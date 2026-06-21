@@ -57,7 +57,7 @@ export interface ApiEndpoint {
     description: string;
     example: any;
   }[];
-  simulationHandler: (input: any) => { status: number; body: any };
+  simulationHandler?: (input: any) => { status: number; body: any };
 }
 
 export interface SecurityCheckItem {

@@ -89,8 +89,8 @@ The FortifyAuth REST API runs on port `3000` via standard HTTPS. All transaction
 {
   "success": true,
   "message": "Authentication successful.",
-  "accessToken": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6...",
-  "refreshToken": "ref_8820f4_bc308"
+  "accessToken": "<YOUR_ACCESS_TOKEN>",
+  "refreshToken": "<YOUR_REFRESH_TOKEN>"
 }
 ```
 *(Optionally establishes cookies automatically).*
