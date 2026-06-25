@@ -1,7 +1,11 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
+# We use npm install --legacy-peer-deps because we have forced some versions
+# that npm ci might complain about if not perfectly aligned in lockfile.
+# But with my recent npm install, the lockfile should be good.
+# Still, --legacy-peer-deps is safer given the explicit requirements.
+RUN npm install --legacy-peer-deps
 COPY . .
 RUN npx prisma generate
 RUN npm install --legacy-peer-deps
