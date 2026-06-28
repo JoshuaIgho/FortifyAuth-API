@@ -1,20 +1,23 @@
+# Stage 1: Build
 FROM node:20-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
-# We use npm install --legacy-peer-deps because we have forced some versions
-# that npm ci might complain about if not perfectly aligned in lockfile.
-# But with my recent npm install, the lockfile should be good.
-# Still, --legacy-peer-deps is safer given the explicit requirements.
+# Using npm install --legacy-peer-deps to handle conflicts during build
 RUN npm install --legacy-peer-deps
 COPY . .
+# Generate Prisma Client
 RUN npx prisma generate
+# Build frontend and bundle server
 RUN npm run build
 
+# Stage 2: Runtime
 FROM node:20-alpine
 WORKDIR /app
+# Inherit only what's needed for production
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
+# Port is dynamic on Render
 EXPOSE 4000
 CMD ["node", "dist/server.js"]
