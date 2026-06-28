@@ -7,8 +7,7 @@ RUN npm install --legacy-peer-deps
 COPY . .
 # Generate Prisma Client
 RUN npx prisma generate
-# Build frontend and bundle server
-RUN npm run build
+RUN npm install --legacy-peer-deps
 
 # Stage 2: Runtime
 FROM node:20-alpine
@@ -21,3 +20,6 @@ COPY --from=builder /app/prisma ./prisma
 # Port is dynamic on Render
 EXPOSE 4000
 CMD ["node", "dist/server.js"]
+
+
+

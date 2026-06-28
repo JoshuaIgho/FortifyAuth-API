@@ -28,7 +28,3 @@ When updating code blocks touching crypto services, you must satisfy these const
 2. **Never commit hardcoded test credentials** or raw salt strings.
 3. Every SQL transaction must go through Prisma query parameter mappings to avoid SQL inject vectors.
 
----
-
-## 4. Submitting Security Vulnerabilities
-Do **NOT** report security issues via public GitHub Issues. Email details to: `security@fortifyauth.io` to ensure a coordinated disclosure timeline.
