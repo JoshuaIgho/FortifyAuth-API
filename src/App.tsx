@@ -76,10 +76,6 @@ export default function App() {
               <span className="h-1.5 w-1.5 bg-[#10b981] rounded-full" />
               <span className="text-[#94a3b8]">PostgreSQL: ACTIVE</span>
             </div>
-            <div className="flex items-center space-x-2">
-              <span className="h-1.5 w-1.5 bg-[#10b981] rounded-full" />
-              <span className="text-[#94a3b8]">Redis: SYNCED</span>
-            </div>
           </div>
         </header>
 

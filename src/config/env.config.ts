@@ -7,7 +7,6 @@ const envSchema = z.object({
   PORT: z.coerce.number().default(3000),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   DATABASE_URL: z.string().url('DATABASE_URL is required and must be a valid URL'),
-  REDIS_URL: z.string().url('REDIS_URL is required and must be a valid URL'),
   JWT_SECRET: z
     .string()
     .min(32, 'JWT_SECRET is required and must be at least 32 characters')

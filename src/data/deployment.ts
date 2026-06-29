@@ -11,9 +11,6 @@ APP_URL=https://api.fortifyauth.com
 # Ensure to append sslmode=require in production to protect data in transit.
 DATABASE_URL="postgresql://<USER>:<PASSWORD>@<HOST>:5432/<DB>?sslmode=require&schema=public"
 
-# Redis cache and Token session store client string
-REDIS_URL="rediss://:<PASSWORD>@<HOST>:6379/0"
-
 # HS256 JWT Cryptographic Secrets (Must be at least 32/64 high-entropy random characters)
 # Generate via: openssl rand -base64 48
 JWT_ACCESS_SECRET="<YOUR_JWT_ACCESS_SECRET>"
@@ -117,7 +114,6 @@ services:
       - PORT=3000
       - NODE_ENV=production
       - DATABASE_URL=postgresql://<USER>:<PASSWORD>@postgres_db:5432/fortify_database?sslmode=disable
-      - REDIS_URL=redis://:<PASSWORD>@redis_cache:6379/0
       - JWT_ACCESS_SECRET=<YOUR_JWT_ACCESS_SECRET>
       - JWT_REFRESH_SECRET=<YOUR_JWT_REFRESH_SECRET>
       - SMTP_HOST=smtp.mailtrap.io
@@ -127,8 +123,6 @@ services:
       - SMTP_FROM=security@fortifyauth.com
     depends_on:
       postgres_db:
-        condition: service_healthy
-      redis_cache:
         condition: service_healthy
     networks:
       - fortify_backend
@@ -155,27 +149,8 @@ services:
       - fortify_backend
     restart: always
 
-  # In-Memory Cache and Rate Limiting Redis Server
-  redis_cache:
-    image: redis:7-alpine
-    container_name: redis_cache_prod
-    command: redis-server --requirepass <PASSWORD>
-    ports:
-      - "6379:6379"
-    volumes:
-      - redisdata:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "-a", "<PASSWORD>", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - fortify_backend
-    restart: always
-
 volumes:
   pgdata:
-  redisdata:
 
 networks:
   fortify_backend:

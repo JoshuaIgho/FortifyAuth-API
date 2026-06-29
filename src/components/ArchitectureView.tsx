@@ -112,27 +112,6 @@ export default function ArchitectureView() {
                 Backing Services
               </div>
 
-              {/* Redis Store */}
-              <button
-                onClick={() => setSelectedNodeId('redis_store')}
-                className={`p-4 rounded-xl border text-left transition-all ${
-                  selectedNodeId === 'redis_store'
-                    ? 'border-[#f43f5e] bg-[#f43f5e]/10 shadow-[0_0_15px_rgba(244,63,94,0.1)] ring-1 ring-[#f43f5e]/30'
-                    : 'border-[#1e293b] bg-slate-950/60 hover:bg-slate-900 text-slate-300'
-                }`}
-              >
-                <div
-                  className={`flex items-center space-x-2 font-bold text-xs ${selectedNodeId === 'redis_store' ? 'text-[#f43f5e]' : 'text-slate-400'}`}
-                >
-                  <span>⚡ redis</span>
-                </div>
-                <div className="font-semibold text-slate-100 text-xs mt-1">
-                  In-Memory Cache & Limiter
-                </div>
-                <p className="text-[10px] text-slate-400 mt-0.5 leading-normal">
-                  Active jti blacklist, sliding window rate counters.
-                </p>
-              </button>
 
               {/* Postgres DB */}
               <button
@@ -185,9 +164,8 @@ export default function ArchitectureView() {
             {/* Draw beautiful paths if needed, or simply let the layout structure represent flow */}
             <div className="absolute left-1/3 top-[32%] w-[15%] h-[1px] border-t-2 border-dashed border-emerald-500"></div>
             <div className="absolute left-1/3 top-[68%] w-[15%] h-[1px] border-t-2 border-dashed border-blue-500"></div>
-            <div className="absolute right-1/3 top-[25%] w-[15%] h-[1px] border-t-2 border-dashed border-rose-500"></div>
-            <div className="absolute right-1/3 top-[50%] w-[15%] h-[1px] border-t-2 border-dashed border-[#1e293b]"></div>
-            <div className="absolute right-1/3 top-[75%] w-[15%] h-[1px] border-t-2 border-dashed border-blue-500"></div>
+            <div className="absolute right-1/3 top-[35%] w-[15%] h-[1px] border-t-2 border-dashed border-[#1e293b]"></div>
+            <div className="absolute right-1/3 top-[65%] w-[15%] h-[1px] border-t-2 border-dashed border-blue-500"></div>
           </div>
 
           {/* Key Indicators Footnotes */}

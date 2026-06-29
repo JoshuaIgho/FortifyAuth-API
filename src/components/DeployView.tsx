@@ -21,8 +21,6 @@ export default function DeployView() {
     switch (key) {
       case 'DATABASE_URL':
         return 'The connection string for PostgreSQL. In production must contain secure flags like "sslmode=require" to prevent man-in-the-middle sniffing of queries.';
-      case 'REDIS_URL':
-        return 'The Redis connection URL. Crucial to prefix with "rediss://" (SSL) to guarantee encrypted transit of rate limit, OTPs, and blacklist parameters.';
       case 'JWT_ACCESS_SECRET':
         return 'HS256 encryption string signing short-lived 15m access tokens. In production, must be at least 32/64 high-entropy characters to block brute-forcing offline calculations.';
       case 'JWT_REFRESH_SECRET':
