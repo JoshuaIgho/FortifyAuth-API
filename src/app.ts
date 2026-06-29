@@ -17,6 +17,9 @@ import { sanitize } from './middlewares/sanitize.middleware';
 
 const app: Express = express();
 
+// Trust proxy for rate limiting (Render, Heroku, etc.)
+app.set('trust proxy', 1);
+
 // Set security HTTP headers
 app.use(helmet());
 
@@ -66,9 +69,7 @@ app.use('/', routes);
 
 // Serve static frontend assets in production
 if (env.NODE_ENV === 'production') {
-  // Use process.cwd() as a fallback for __dirname in production if needed,
-  // or use the path relative to the process start location.
-  const publicPath = path.join(process.cwd(), 'dist');
+  const publicPath = path.join(process.cwd(), 'dist/client');
 
   app.use(express.static(publicPath));
 

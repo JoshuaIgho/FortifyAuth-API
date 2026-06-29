@@ -74,15 +74,18 @@ export type EnvType = z.infer<typeof envSchema>;`,
               codeSample: `import Redis from 'ioredis';
 import { env } from './env';
 
-// Initialize Redis Client securely
+// Initialize Redis Client securely (Singleton)
 export const redis = new Redis(env.REDIS_URL, {
-  maxRetriesPerRequest: null,
+  maxRetriesPerRequest: null, // Allow indefinite retries for production resilience
   enableReadyCheck: false,
-  lazyConnect: true
+  lazyConnect: true,
+  retryStrategy: (times) => Math.min(times * 50, 2000),
 });
 
-redis.on('connect', () => console.log('Redis connected successfully'));
-redis.on('error', (err) => console.error('Redis connection failure:', err));`,
+redis.on('connect', () => console.log('Redis connecting...'));
+redis.on('ready', () => console.log('Redis ready'));
+redis.on('reconnecting', (delay) => console.log(\`Redis reconnecting in \${delay}ms...\`));
+redis.on('error', (err) => console.error('Redis error:', err));`,
             },
           ],
         },
