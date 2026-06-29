@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
     "server:dev": "tsx watch src/server.ts",
-    "build": "vite build && esbuild src/server.ts --resolve-extensions=.ts,.js --bundle --platform=node --format=esm --outfile=dist/server.js --external:node:path --external:node:url --packages=external",
+    "build": "vite build --outDir dist/client && esbuild src/server.ts --resolve-extensions=.ts,.js --bundle --platform=node --format=esm --outfile=dist/server.js --external:node:path --external:node:url --packages=external",
     "start": "node dist/server.js",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
