@@ -108,7 +108,7 @@ import { redisClient } from '../config/redis';
 
 export const authRateLimiter = rateLimit({
   store: new RedisStore({
-    sendCommand: (...args: string[]) => redisClient.call(args[0], ...args.slice(1)),
+    sendCommand: (...args: string[]) => redis.call(...args),
   }),
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 5,                   // IP capped to 5 requests per 15m for critical paths

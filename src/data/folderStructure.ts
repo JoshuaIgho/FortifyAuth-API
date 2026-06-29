@@ -76,12 +76,9 @@ import { env } from './env';
 
 // Initialize Redis Client securely
 export const redis = new Redis(env.REDIS_URL, {
-  maxRetriesPerRequest: 3,
-  retryStrategy: (times) => {
-    // Reconnect backoff parameters
-    const delay = Math.min(times * 50, 2000);
-    return delay;
-  }
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
+  lazyConnect: true
 });
 
 redis.on('connect', () => console.log('Redis connected successfully'));
