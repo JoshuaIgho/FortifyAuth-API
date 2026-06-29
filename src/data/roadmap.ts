@@ -6,7 +6,7 @@ export const roadmapPhases: RoadmapPhase[] = [
     title: 'Foundation, ORM & Environment Setup',
     duration: 'Week 1',
     description:
-      'Establish codebase foundation, containerized databases, migrations, and schema validation.',
+      'Establish codebase foundation, managed databases, migrations, and schema validation.',
     tasks: [
       {
         title: 'Secure Environment Parsing',
@@ -20,7 +20,7 @@ export const roadmapPhases: RoadmapPhase[] = [
       },
       {
         title: 'Docker Orchestration Configs',
-        desc: 'Boot dependencies (PostgreSQL, Redis dev server) using local Docker Compose scripts.',
+        desc: 'Boot dependencies (PostgreSQL, Redis dev server) using external managed services.',
         completedByDefault: true,
       },
       {

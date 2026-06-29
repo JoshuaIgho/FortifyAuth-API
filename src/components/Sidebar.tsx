@@ -27,7 +27,7 @@ export default function Sidebar({ currentTab, setTab }: SidebarProps) {
     { id: 'playground', label: 'API Playground', icon: PlayCircle, desc: 'Interactive Sandbox' },
     { id: 'security', label: 'Security Specs', icon: LockKeyhole, desc: 'OWASP & Codified Guides' },
     { id: 'roadmap', label: 'Dev Roadmap', icon: CalendarClock, desc: 'Phased Execution Plan' },
-    { id: 'deployment', label: 'Production Deploy', icon: Globe, desc: 'Docker, VPC & Cluster' },
+    { id: 'deployment', label: 'Production Deploy', icon: Globe, desc: 'Render & Node.js Runtime' },
   ];
 
   const demoItems = [

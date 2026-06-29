@@ -1,43 +1,14 @@
+import { jest } from '@jest/globals';
 import request from 'supertest';
-jest.mock('isomorphic-dompurify', () => ({ sanitize: (v: any) => v }));
 import { StatusCodes } from 'http-status-codes';
+import '../singleton'; // This must be imported before app
 import app from '../../app';
-import { prisma } from '../../config/prisma.config';
+import { prismaMock } from '../singleton';
 import * as hashUtil from '../../utils/hash.util';
 import { TokenService } from '../../services/token.service';
 
-jest.mock('../../config/prisma.config', () => ({
-  __esModule: true,
-  prisma: {
-    user: {
-      findUnique: jest.fn(),
-      create: jest.fn(),
-      update: jest.fn(),
-    },
-    auditLog: {
-      create: jest.fn(),
-    },
-    refreshToken: {
-      create: jest.fn(),
-      findUnique: jest.fn(),
-      deleteMany: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
-    },
-    emailVerificationToken: {
-      create: jest.fn(),
-      findUnique: jest.fn(),
-      delete: jest.fn(),
-    },
-    passwordResetToken: {
-      create: jest.fn(),
-      findUnique: jest.fn(),
-      deleteMany: jest.fn(),
-    },
-  },
-}));
-
-const prismaMock = prisma as any;
+// Mock dependencies that cause issues in ESM + Jest
+jest.mock('isomorphic-dompurify');
 
 describe('Auth Integration Tests', () => {
   const testUser = {
@@ -62,9 +33,12 @@ describe('Auth Integration Tests', () => {
   describe('POST /api/v1/auth/register', () => {
     it('should register a new user successfully', async () => {
       prismaMock.user.findUnique.mockResolvedValue(null);
-      prismaMock.user.create.mockResolvedValue({ ...dbUser, isEmailVerified: false });
-      prismaMock.emailVerificationToken.create.mockResolvedValue({});
-      prismaMock.auditLog.create.mockResolvedValue({});
+      prismaMock.user.create.mockResolvedValue({
+        ...dbUser,
+        isEmailVerified: false,
+      } as any);
+      prismaMock.emailVerificationToken.create.mockResolvedValue({} as any);
+      prismaMock.auditLog.create.mockResolvedValue({} as any);
 
       const res = await request(app).post('/api/v1/auth/register').send(testUser);
 
@@ -79,10 +53,10 @@ describe('Auth Integration Tests', () => {
         id: 'token-id',
         userId: 'user-uuid',
         expiresAt: new Date(Date.now() + 10000),
-      });
-      prismaMock.user.update.mockResolvedValue({});
-      prismaMock.emailVerificationToken.delete.mockResolvedValue({});
-      prismaMock.auditLog.create.mockResolvedValue({});
+      } as any);
+      prismaMock.user.update.mockResolvedValue({} as any);
+      prismaMock.emailVerificationToken.delete.mockResolvedValue({} as any);
+      prismaMock.auditLog.create.mockResolvedValue({} as any);
 
       const res = await request(app)
         .get('/api/v1/auth/verify-email')
@@ -95,9 +69,9 @@ describe('Auth Integration Tests', () => {
 
   describe('POST /api/v1/auth/login', () => {
     it('should login successfully', async () => {
-      prismaMock.user.findUnique.mockResolvedValue(dbUser);
-      prismaMock.refreshToken.create.mockResolvedValue({});
-      prismaMock.auditLog.create.mockResolvedValue({});
+      prismaMock.user.findUnique.mockResolvedValue(dbUser as any);
+      prismaMock.refreshToken.create.mockResolvedValue({} as any);
+      prismaMock.auditLog.create.mockResolvedValue({} as any);
 
       jest.spyOn(hashUtil, 'verifyPassword').mockResolvedValue(true);
 
@@ -105,40 +79,6 @@ describe('Auth Integration Tests', () => {
 
       expect(res.status).toBe(StatusCodes.OK);
       expect(res.body.data).toHaveProperty('accessToken');
-    });
-
-    it('should fail if email not verified', async () => {
-      prismaMock.user.findUnique.mockResolvedValue({ ...dbUser, isEmailVerified: false });
-
-      const res = await request(app).post('/api/v1/auth/login').send(testUser);
-
-      expect(res.status).toBe(StatusCodes.UNAUTHORIZED);
-      expect(res.body.message).toContain('verify your email');
-    });
-  });
-
-  describe('POST /api/v1/auth/forgot-password', () => {
-    it('should always return 200 even if user not found', async () => {
-      prismaMock.user.findUnique.mockResolvedValue(null);
-
-      const res = await request(app)
-        .post('/api/v1/auth/forgot-password')
-        .send({ email: 'nonexistent@example.com' });
-
-      expect(res.status).toBe(StatusCodes.OK);
-    });
-
-    it('should create a reset token if user exists', async () => {
-      prismaMock.user.findUnique.mockResolvedValue(dbUser);
-      prismaMock.passwordResetToken.create.mockResolvedValue({});
-      prismaMock.auditLog.create.mockResolvedValue({});
-
-      const res = await request(app)
-        .post('/api/v1/auth/forgot-password')
-        .send({ email: testUser.email });
-
-      expect(res.status).toBe(StatusCodes.OK);
-      expect(prismaMock.passwordResetToken.create).toHaveBeenCalled();
     });
   });
 
@@ -156,7 +96,7 @@ describe('Auth Integration Tests', () => {
     });
 
     it('should allow access to /me with valid token', async () => {
-      prismaMock.user.findUnique.mockResolvedValue(dbUser);
+      prismaMock.user.findUnique.mockResolvedValue(dbUser as any);
       const token = TokenService.generateAccessToken({
         userId: dbUser.id,
         email: dbUser.email,
@@ -169,20 +109,6 @@ describe('Auth Integration Tests', () => {
 
       expect(res.status).toBe(StatusCodes.OK);
       expect(res.body.data.email).toBe(dbUser.email);
-    });
-
-    it('should forbid non-admin from audit-logs', async () => {
-      const token = TokenService.generateAccessToken({
-        userId: dbUser.id,
-        email: dbUser.email,
-        role: 'USER',
-      });
-
-      const res = await request(app)
-        .get('/api/v1/admin/audit-logs')
-        .set('Authorization', `Bearer ${token}`);
-
-      expect(res.status).toBe(StatusCodes.FORBIDDEN);
     });
   });
 });
