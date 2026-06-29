@@ -10,5 +10,6 @@ module.exports = {
   extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^isomorphic-dompurify$': '<rootDir>/src/tests/mocks/dompurify.mock.ts',
   },
 };
