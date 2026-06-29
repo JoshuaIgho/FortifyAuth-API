@@ -101,15 +101,10 @@ app.use(helmet({
     vulnerability:
       'Uncapped public routers are highly vulnerable to credential stuffing bots, DOS volume dumps, and brute-force password guessing.',
     bestPractice:
-      'Enforce distinct sliding-window limits using Redis: strict caps on authorization attempt paths (e.g. 5 attempts per IP per 10 mins) and generous caps for general routes.',
+      'Enforce distinct sliding-window limits using memory or cache stores: strict caps on authorization attempt paths (e.g. 5 attempts per IP per 10 mins) and generous caps for general routes.',
     codeSnippet: `import rateLimit from 'express-rate-limit';
-import RedisStore from 'rate-limit-redis';
-import { redisClient } from '../config/redis';
 
 export const authRateLimiter = rateLimit({
-  store: new RedisStore({
-    sendCommand: (...args: string[]) => redis.call(...args),
-  }),
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 5,                   // IP capped to 5 requests per 15m for critical paths
   message: { error: 'Too many authentication attempts. Please retry in 15 minutes.' },

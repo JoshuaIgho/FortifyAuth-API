@@ -66,27 +66,6 @@ const envSchema = z.object({
 export const env = envSchema.parse(process.env);
 export type EnvType = z.infer<typeof envSchema>;`,
             },
-            {
-              name: 'redis.ts',
-              type: 'file',
-              path: '/src/config/redis.ts',
-              description: 'Redis client connection instantiator.',
-              codeSample: `import Redis from 'ioredis';
-import { env } from './env';
-
-// Initialize Redis Client securely (Singleton)
-export const redis = new Redis(env.REDIS_URL, {
-  maxRetriesPerRequest: null, // Allow indefinite retries for production resilience
-  enableReadyCheck: false,
-  lazyConnect: true,
-  retryStrategy: (times) => Math.min(times * 50, 2000),
-});
-
-redis.on('connect', () => console.log('Redis connecting...'));
-redis.on('ready', () => console.log('Redis ready'));
-redis.on('reconnecting', (delay) => console.log(\`Redis reconnecting in \${delay}ms...\`));
-redis.on('error', (err) => console.error('Redis error:', err));`,
-            },
           ],
         },
         {
@@ -157,56 +136,19 @@ export function authorize(roles: ('USER' | 'ADMIN')[]) {
               type: 'file',
               path: '/src/middlewares/rateLimit.ts',
               description:
-                'Redis-backed granular sliding-window rate-limiter safeguarding endpoints against brute force and credential stuffing.',
-              codeSample: `import { Request, Response, NextFunction } from 'express';
-import { redis } from '../config/redis';
+                'In-memory granular sliding-window rate-limiter safeguarding endpoints against brute force and credential stuffing.',
+              codeSample: `import rateLimit from 'express-rate-limit';
 
-interface RateLimitConfig {
-  windowSeconds: number;
-  maxRequests: number;
-  errorMessage: string;
-}
-
-export function createRateLimiter(config: RateLimitConfig) {
-  return async (req: Request, res: Response, next: NextFunction) => {
-    // ID rate limits uniquely by IP address, fallback to user id if logged in
-    const identifier = req.user?.userId || req.ip || 'anonymous';
-    const redisKey = \`rate_limit:\${req.path}:\${identifier}\`;
-
-    try {
-      const now = Date.now();
-      const clearBefore = now - (config.windowSeconds * 1000);
-
-      // Perform transaction via Redis Multi to prevent race conditions
-      const multi = redis.multi();
-      multi.zremrangebyscore(redisKey, 0, clearBefore); // Clear outdated requests
-      multi.zcard(redisKey); // Count current requests in window
-      multi.zadd(redisKey, now, now.toString()); // Log current hit
-      multi.expire(redisKey, config.windowSeconds); // Maintain cache lifetime TTL
-      
-      const results = await multi.exec();
-      if (!results) {
-        return next();
-      }
-
-      const requestCount = results[1][1] as number;
-
-      if (requestCount >= config.maxRequests) {
-        res.setHeader('Retry-After', config.windowSeconds);
-        return res.status(429).json({
-          error: config.errorMessage,
-          retryAfterSeconds: config.windowSeconds
-        });
-      }
-
-      next();
-    } catch (err) {
-      // Graceful degradation: if Redis fails in production, do not block users. Call next().
-      console.error('Rate Limiter failed:', err);
-      next();
-    }
-  };
-}`,
+export const authRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    status: 429,
+    message: 'Too many requests from this IP, please try again after 15 minutes',
+  },
+});`,
             },
             {
               name: 'validate.ts',

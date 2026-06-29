@@ -15,7 +15,6 @@ Ensure the following variables are set in the Render Dashboard:
 | Variable | Description |
 |----------|-------------|
 | `DATABASE_URL` | Managed PostgreSQL connection string |
-| `REDIS_URL` | Managed Redis connection string |
 | `JWT_ACCESS_SECRET` | 32+ character random string |
 | `JWT_REFRESH_SECRET` | 32+ character random string |
 | `SMTP_HOST` | SMTP provider host |

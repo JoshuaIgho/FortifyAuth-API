@@ -50,21 +50,6 @@ export const archNodes: ArchNode[] = [
       'Use a custom Global Error Handler that catch-alls errors, logs full traces internally, and returns sterile, generic warnings to users.',
   },
   {
-    id: 'redis_store',
-    label: 'Redis Session & Cache Store',
-    type: 'database',
-    description:
-      'High-speed, in-memory data store holding rate limit bucket states, active sessions, and blacklisted JWT blocks.',
-    responsibility: [
-      'Keep track of Redis-backed API rate limit tokens per IP/User id',
-      'Maintain an Access Token / JTI revoking blacklist for instant token invalidation (Logout)',
-      'Temporarily store active high-velocity email verification states or OTPs (One-Time-Passwords)',
-    ],
-    techUsed: 'Redis + redis npm client / ioredis',
-    configTip:
-      'Configure evictions as volatile-lru to ensure rate limiter and blacklists expire elements automatically according to TTL thresholds.',
-  },
-  {
     id: 'postgres_db',
     label: 'PostgreSQL Relational DB',
     type: 'database',
