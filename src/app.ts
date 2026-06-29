@@ -69,11 +69,17 @@ app.use('/', routes);
 
 // Serve static frontend assets in production
 if (env.NODE_ENV === 'production') {
-  const publicPath = path.join(process.cwd(), 'dist/client');
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  const publicPath = path.join(__dirname, 'client');
 
   app.use(express.static(publicPath));
 
-  app.get(/^(?!\/api).*/, (req, res) => {
+  // SPA fallback for non-API routes
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api') || req.path === '/health') {
+      return next();
+    }
     res.sendFile(path.join(publicPath, 'index.html'));
   });
 }
