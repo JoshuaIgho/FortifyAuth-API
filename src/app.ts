@@ -71,22 +71,36 @@ app.use('/', routes);
 if (env.NODE_ENV === 'production') {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
-  const publicPath = path.join(__dirname, 'client');
 
+  // When bundled by esbuild into dist/server.js, __dirname is dist.
+  // The frontend assets are in dist/client.
+  const publicPath = path.resolve(__dirname, 'client');
+
+  // Serve static files (js, css, images, etc.) from dist/client
   app.use(express.static(publicPath));
 
-  // SPA fallback for non-API routes
+  // SPA fallback for all non-API routes
+  // This MUST be registered before the 404 handler
   app.get('*', (req, res, next) => {
+    // If the request is for an API route or health check that wasn't handled,
+    // let it fall through to the 404 handler.
     if (req.path.startsWith('/api') || req.path === '/health') {
       return next();
     }
-    res.sendFile(path.join(publicPath, 'index.html'));
+
+    // For all other routes (/, /login, /docs, etc.), serve the React app
+    res.sendFile(path.join(publicPath, 'index.html'), (err) => {
+      if (err) {
+        next(err);
+      }
+    });
   });
 }
 
 // Send back a 404 error for any unknown api request
+// In production, this will only be reached for unhandled /api/* or /health routes
 app.use((req, res, next) => {
-  next(new NotFoundError('Not found'));
+  next(new NotFoundError(`Not found - ${req.originalUrl}`));
 });
 
 // Convert error to ApiError, if needed
