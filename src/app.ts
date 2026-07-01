@@ -1,6 +1,8 @@
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import express, { Express } from 'express';
+import { logger } from './utils/logger';
 import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
@@ -67,31 +69,37 @@ app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // API routes
 app.use('/', routes);
 
-// Serve static frontend assets in production
-if (env.NODE_ENV === 'production') {
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = path.dirname(__filename);
+// Serve static frontend assets
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-  // When bundled by esbuild into dist/server.js, __dirname is dist.
-  // The frontend assets are in dist/client.
-  const publicPath = path.resolve(__dirname, 'client');
+// Robust path resolution for production assets
+const publicPath = path.resolve(process.cwd(), 'dist/client');
+const fallbackPath = path.resolve(__dirname, 'client');
+const finalPublicPath = fs.existsSync(publicPath) ? publicPath : fallbackPath;
 
+logger.info(`Frontend assets path: ${finalPublicPath}`);
+logger.info(`Frontend assets exist: ${fs.existsSync(finalPublicPath)}`);
+
+// Always register static and SPA fallback in production or when assets exist
+if (fs.existsSync(finalPublicPath) || env.NODE_ENV === 'production') {
   // Serve static files (js, css, images, etc.) from dist/client
-  app.use(express.static(publicPath));
+  app.use(express.static(finalPublicPath));
 
   // SPA fallback for all non-API routes
   // This MUST be registered before the 404 handler
   app.get('*', (req, res, next) => {
     // If the request is for an API route or health check that wasn't handled,
     // let it fall through to the 404 handler.
-    if (req.path.startsWith('/api') || req.path === '/health') {
+    if (req.path.startsWith('/api') || req.path === '/health' || req.path.startsWith('/api/docs')) {
       return next();
     }
 
     // For all other routes (/, /login, /docs, etc.), serve the React app
-    res.sendFile(path.join(publicPath, 'index.html'), (err) => {
+    res.sendFile(path.join(finalPublicPath, 'index.html'), (err) => {
       if (err) {
-        next(err);
+        // If index.html is missing for some reason, fall through to 404
+        next();
       }
     });
   });
