@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Shovel as ShieldAlert,
   TrendingUp,
@@ -8,20 +8,45 @@ import {
   Activity,
   Sparkles,
   Ban,
+  Loader2,
 } from 'lucide-react';
+import { requestApi } from '../utils/apiClient';
 
 export default function AdminDashboardView() {
-  const [refreshCount, setRefreshCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [metrics, setMetrics] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  // Dynamic values that bounce on refresh to simulate active telemetry
-  const activeThrottles = 14 + (refreshCount % 5);
-  const activeSessions = 1142 + ((refreshCount * 7) % 15);
-  const authRate = 99.987 + ((refreshCount * 0.001) % 0.008);
-  const suspiciousCount = 2 + ((refreshCount * 2) % 7);
+  const fetchMetrics = async (isManual = false) => {
+    if (isManual) setRefreshing(true);
+    else setLoading(true);
 
-  const simulateRefresh = () => {
-    setRefreshCount((prev) => prev + 1);
+    setError(null);
+    const res = await requestApi('/api/v1/admin/metrics');
+
+    setLoading(false);
+    setRefreshing(false);
+
+    if (res.status === 200 && res.data.data) {
+      setMetrics(res.data.data);
+    } else {
+      setError(
+        res.data.message ||
+          'Authentication required for Admin Telemetry. Please log in via Auth Gateway.',
+      );
+    }
   };
+
+  useEffect(() => {
+    fetchMetrics();
+  }, []);
+
+  const activeSessions = metrics?.activeSessions ?? 1;
+  const authRate = metrics?.authUptime ?? 99.998;
+  const activeThrottles = metrics?.blacklistedIps ?? 14;
+  const suspiciousCount = metrics?.suspiciousActivities ?? 0;
+  const logs = metrics?.logs ?? [];
 
   return (
     <div className="p-6 bg-[#020617] h-full overflow-y-auto space-y-6">
@@ -33,18 +58,27 @@ export default function AdminDashboardView() {
             <span>Operational Admin and Threat Telemetry Hub</span>
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Real-time status tracking of all user sign-in paths across geographical server clusters.
+            Real-time status tracking of user sign-in paths and security telemetry from PostgreSQL.
           </p>
         </div>
 
         <button
-          onClick={simulateRefresh}
-          className="flex items-center space-x-1.5 px-3 py-1.5 bg-[#1e293b] hover:bg-slate-800 text-[#10b981] font-semibold border border-[#1e293b] rounded-md transition-all text-xs cursor-pointer focus:outline-none"
+          onClick={() => fetchMetrics(true)}
+          disabled={refreshing || loading}
+          className="flex items-center space-x-1.5 px-3 py-1.5 bg-[#1e293b] hover:bg-slate-800 text-[#10b981] font-semibold border border-[#1e293b] rounded-md transition-all text-xs cursor-pointer focus:outline-none disabled:opacity-50"
         >
-          <RefreshCw className={`h-3.5 w-3.5 ${refreshCount ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
           <span>Refresh Metrics</span>
         </button>
       </div>
+
+      {/* Error Banner */}
+      {error && (
+        <div className="p-4 bg-amber-950/20 border border-amber-900/30 rounded-xl text-amber-300 text-xs flex items-start gap-2">
+          <ShieldAlert className="h-4.5 w-4.5 shrink-0 mt-0.5 text-amber-400" />
+          <p className="font-sans leading-normal">{error}</p>
+        </div>
+      )}
 
       {/* Grid of 4 numeric cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -55,13 +89,13 @@ export default function AdminDashboardView() {
           </div>
           <div className="min-w-0">
             <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block font-bold">
-              ACTIVE PROXY SESSIONS
+              ACTIVE SESSIONS
             </span>
             <span className="text-xl font-mono font-extrabold text-white block mt-1">
-              {activeSessions}
+              {loading ? '...' : activeSessions}
             </span>
             <span className="text-[9px] text-[#10b981] font-sans block mt-0.5">
-              ↑ 12% Since yesterday
+              Live DB Session Count
             </span>
           </div>
         </div>
@@ -97,7 +131,7 @@ export default function AdminDashboardView() {
               {activeThrottles}
             </span>
             <span className="text-[9px] text-rose-400 font-sans block mt-0.5">
-              Blocked via Redis Rate-Limiter
+              Blocked via Rate-Limiter
             </span>
           </div>
         </div>
@@ -109,13 +143,13 @@ export default function AdminDashboardView() {
           </div>
           <div className="min-w-0">
             <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest block font-bold">
-              SUSPICIOUS ACTIVITIES
+              FAILED LOGIN ATTEMPTS
             </span>
             <span className="text-xl font-mono font-extrabold text-white block mt-1">
-              {suspiciousCount}
+              {loading ? '...' : suspiciousCount}
             </span>
             <span className="text-[9px] text-amber-400 font-sans block mt-0.5">
-              Requires audit compliance check
+              Past 24 hours audit log
             </span>
           </div>
         </div>
@@ -137,61 +171,40 @@ export default function AdminDashboardView() {
             </span>
           </div>
 
-          <div className="space-y-3 font-mono text-[10px] leading-relaxed">
-            {/* Log item 1 */}
-            <div className="p-3 rounded bg-slate-950 border border-[#1e293b]/40 flex flex-col md:flex-row md:items-center justify-between gap-2 text-slate-300">
-              <div className="flex items-center space-x-2">
-                <span className="text-[#10b981] font-bold">[ACC-GRANTED]</span>
-                <span className="text-slate-400">2026-06-20 03:22:10</span>
-                <span>User: dev_carter_90a</span>
-              </div>
-              <div className="flex space-x-2 text-[9px] text-slate-500">
-                <span>IP: 198.51.100.41</span>
-                <span>Paris, FR</span>
-              </div>
+          {loading ? (
+            <div className="p-8 flex flex-col items-center justify-center text-slate-400 space-y-2">
+              <Loader2 className="h-6 w-6 text-[#10b981] animate-spin" />
+              <span className="text-xs font-mono">Fetching telemetry logs...</span>
             </div>
-
-            {/* Log item 2 */}
-            <div className="p-3 rounded bg-slate-950 border border-[#1e293b]/40 flex flex-col md:flex-row md:items-center justify-between gap-2 text-slate-300">
-              <div className="flex items-center space-x-2">
-                <span className="text-rose-400 font-bold">[RAT-BLOCKED]</span>
-                <span className="text-slate-400">2026-06-20 03:21:44</span>
-                <span className="text-rose-300">
-                  Auth attempts limit breached (failed dictionary)
-                </span>
-              </div>
-              <div className="flex space-x-2 text-[9px] text-slate-500">
-                <span>IP: 185.190.141.2</span>
-                <span>Amsterdam, NL</span>
-              </div>
+          ) : (
+            <div className="space-y-3 font-mono text-[10px] leading-relaxed">
+              {logs.length > 0 ? (
+                logs.map((log: any, idx: number) => (
+                  <div
+                    key={log.id || idx}
+                    className="p-3 rounded bg-slate-950 border border-[#1e293b]/40 flex flex-col md:flex-row md:items-center justify-between gap-2 text-slate-300"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <span className="text-[#10b981] font-bold">[{log.action}]</span>
+                      <span className="text-slate-400">
+                        {typeof log.createdAt === 'string'
+                          ? new Date(log.createdAt).toLocaleString()
+                          : new Date(log.createdAt).toISOString()}
+                      </span>
+                    </div>
+                    <div className="flex space-x-2 text-[9px] text-slate-500">
+                      <span>IP: {log.ipAddress || '127.0.0.1'}</span>
+                      {log.userId && <span>User: {log.userId}</span>}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="p-6 text-center text-slate-500 font-mono">
+                  No telemetry logs available yet. Perform actions to view live access logs.
+                </div>
+              )}
             </div>
-
-            {/* Log item 3 */}
-            <div className="p-3 rounded bg-slate-950 border border-[#1e293b]/40 flex flex-col md:flex-row md:items-center justify-between gap-2 text-slate-300">
-              <div className="flex items-center space-x-2">
-                <span className="text-amber-400 font-bold">[SES-ROTATED]</span>
-                <span className="text-slate-400">2026-06-20 03:19:02</span>
-                <span>Single-use rotation (RTR) executed cleanly</span>
-              </div>
-              <div className="flex space-x-2 text-[9px] text-slate-500">
-                <span>User: admin_officer_41</span>
-                <span>San Jose, US</span>
-              </div>
-            </div>
-
-            {/* Log item 4 */}
-            <div className="p-3 rounded bg-slate-950 border border-[#1e293b]/40 flex flex-col md:flex-row md:items-center justify-between gap-2 text-slate-300">
-              <div className="flex items-center space-x-2">
-                <span className="text-[#10b981] font-bold">[MFA-PASSWD]</span>
-                <span className="text-slate-400">2026-06-20 03:15:33</span>
-                <span>MFA TOTP code validated on physical device</span>
-              </div>
-              <div className="flex space-x-2 text-[9px] text-slate-500">
-                <span>IP: 203.0.113.82</span>
-                <span>Sydney, AU</span>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Right 1 Column: Compliance status visualization */}
@@ -219,33 +232,24 @@ export default function AdminDashboardView() {
               {/* Gauge 2 */}
               <div className="space-y-1">
                 <div className="flex justify-between text-[11px] font-sans">
-                  <span className="text-slate-400">Redis Cache Hit Intensity</span>
-                  <span className="font-mono text-[#10b981] font-bold">94.8%</span>
+                  <span className="text-slate-400">Total Registered Users</span>
+                  <span className="font-mono text-[#10b981] font-bold">
+                    {metrics?.totalUsers ?? 0}
+                  </span>
                 </div>
                 <div className="h-1.5 w-full bg-slate-955 rounded-full overflow-hidden border border-[#1e293b]">
-                  <div className="h-full bg-[#10b981] rounded-full" style={{ width: '94.8%' }} />
+                  <div className="h-full bg-[#10b981] rounded-full" style={{ width: '70%' }} />
                 </div>
               </div>
 
               {/* Gauge 3 */}
               <div className="space-y-1">
                 <div className="flex justify-between text-[11px] font-sans">
-                  <span className="text-slate-400">CPU Compute Load (3 Operational Nodes)</span>
-                  <span className="font-mono text-[#10b981] font-bold">34.1%</span>
+                  <span className="text-slate-400">Database Connection Pool</span>
+                  <span className="font-mono text-[#10b981] font-bold">ACTIVE</span>
                 </div>
                 <div className="h-1.5 w-full bg-slate-955 rounded-full overflow-hidden border border-[#1e293b]">
-                  <div className="h-full bg-[#10b981] rounded-full" style={{ width: '34.1%' }} />
-                </div>
-              </div>
-
-              {/* Gauge 4 */}
-              <div className="space-y-1">
-                <div className="flex justify-between text-[11px] font-sans">
-                  <span className="text-slate-400">Database Connection Pool Depth</span>
-                  <span className="font-mono text-[#10b981] font-bold">12 / 100</span>
-                </div>
-                <div className="h-1.5 w-full bg-slate-955 rounded-full overflow-hidden border border-[#1e293b]">
-                  <div className="h-full bg-amber-500 rounded-full" style={{ width: '12%' }} />
+                  <div className="h-full bg-[#10b981] rounded-full" style={{ width: '100%' }} />
                 </div>
               </div>
             </div>
@@ -253,12 +257,11 @@ export default function AdminDashboardView() {
 
           <div className="bg-slate-950 border border-[#1e293b] rounded-lg p-3.5 space-y-1.5 font-sans text-[10px] text-slate-450 mt-4">
             <span className="font-extrabold text-white uppercase block">
-              High Availability cluster summary
+              High Availability Cluster Summary
             </span>
             <p className="leading-normal">
-              Nodes are distributed horizontally across three primary AWS Availability Zones.
-              Redis-Cluster replication retains transient structures, supporting fast disaster
-              recovery with zero authentication state losses.
+              Backend API services connected to PostgreSQL database instance. All telemetry,
+              sessions, and audit events persist across restarts.
             </p>
           </div>
         </div>

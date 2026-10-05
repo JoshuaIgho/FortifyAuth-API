@@ -18,4 +18,11 @@ export class AuditRepository {
       orderBy: { createdAt: 'desc' },
     });
   }
+
+  public static async findMany(options?: { limit?: number }): Promise<AuditLog[]> {
+    return prisma.auditLog.findMany({
+      take: options?.limit,
+      orderBy: { createdAt: 'desc' },
+    });
+  }
 }

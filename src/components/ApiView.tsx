@@ -1,31 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { apiEndpointsList } from '../data/apiEndpoints';
-import { simState, simulationHandlers } from '../docs/examples/simulation';
 import { apiExamples } from '../docs/examples/apiExamples';
-import { ApiEndpoint } from '../types';
-import {
-  Send,
-  Terminal,
-  Key,
-  Database,
-  RefreshCw,
-  UserCheck,
-  ShieldAlert,
-  Sparkles,
-  AlertCircle,
-} from 'lucide-react';
+import { requestApi, getStoredToken } from '../utils/apiClient';
+import { Send, Terminal, Database, UserCheck } from 'lucide-react';
 
 export default function ApiView() {
   const [selectedEndpointId, setSelectedEndpointId] = useState<string>('register');
   const [requestBodyVal, setRequestBodyVal] = useState<string>('');
   const [lastResponse, setLastResponse] = useState<{ status: number; body: any } | null>(null);
-  const [serverStateVers, setServerStateVers] = useState<number>(0); // Trigger re-render of state tracking on actions
+  const [dbUsers, setDbUsers] = useState<any[]>([]);
+  const [activeSessionUser, setActiveSessionUser] = useState<any>(null);
 
   const currentEndpoint =
     apiEndpointsList.find((e) => e.id === selectedEndpointId) || apiEndpointsList[0];
 
   // Set default body values on tab select
-  React.useEffect(() => {
+  useEffect(() => {
     if (currentEndpoint.requestBody?.schema) {
       const defaultObj: Record<string, any> = {};
       Object.entries(currentEndpoint.requestBody.schema).forEach(([k, v]) => {
@@ -42,24 +32,56 @@ export default function ApiView() {
     setLastResponse(null);
   }, [selectedEndpointId, currentEndpoint]);
 
-  const handleSendRequest = () => {
+  // Load live DB users and current session user
+  const fetchLiveState = async () => {
+    const token = getStoredToken();
+    if (token) {
+      const meRes = await requestApi('/api/v1/users/me', { token });
+      if (meRes.status === 200 && meRes.data.data) {
+        setActiveSessionUser(meRes.data.data);
+      } else {
+        setActiveSessionUser(null);
+      }
+
+      const usersRes = await requestApi('/api/v1/admin/users', { token });
+      if (usersRes.status === 200 && Array.isArray(usersRes.data.data)) {
+        setDbUsers(usersRes.data.data);
+      }
+    } else {
+      setActiveSessionUser(null);
+    }
+  };
+
+  useEffect(() => {
+    fetchLiveState();
+  }, []);
+
+  const handleSendRequest = async () => {
     try {
-      let bodyData = {};
+      let bodyData: any = null;
       if (requestBodyVal) {
         bodyData = JSON.parse(requestBodyVal);
       }
 
-      // Call custom simulator
-      const handler = (simulationHandlers as any)[currentEndpoint.id];
-      if (!handler) {
-        throw new Error(`No simulation handler found for endpoint: ${currentEndpoint.id}`);
+      let endpointPath = currentEndpoint.path;
+      // Handle query params or path replacements if needed
+      if (currentEndpoint.method === 'GET' && currentEndpoint.id === 'verify-email') {
+        const tokenVal = bodyData?.token || 'sample-verification-token';
+        endpointPath = `/api/v1/auth/verify-email?token=${encodeURIComponent(tokenVal)}`;
       }
 
-      const result = handler(bodyData);
-      setLastResponse(result);
+      const res = await requestApi(endpointPath, {
+        method: currentEndpoint.method as any,
+        body: currentEndpoint.method !== 'GET' ? bodyData : undefined,
+      });
 
-      // Update global server-mock state trackers
-      setServerStateVers((prev) => prev + 1);
+      setLastResponse({
+        status: res.status,
+        body: res.data,
+      });
+
+      // Refresh live server states
+      fetchLiveState();
     } catch (err: any) {
       setLastResponse({
         status: 400,
@@ -72,7 +94,7 @@ export default function ApiView() {
   };
 
   const handleFillDemoCreds = (email: string, pass: string) => {
-    const realEmail = email === 'admin@example.com' ? apiExamples.email : email; // In a real app we'd have better logic
+    const realEmail = email === 'admin@example.com' ? 'admin@fortifyauth.io' : email;
     const demoPayload = { email: realEmail, password: pass };
     setRequestBodyVal(JSON.stringify(demoPayload, null, 2));
   };
@@ -87,7 +109,7 @@ export default function ApiView() {
             <span>Endpoint Catalogs (OpenAPI)</span>
           </h3>
           <p className="text-[10px] text-slate-400 font-sans mt-2">
-            Explore and run functional mock HTTP endpoints.
+            Explore and execute real live HTTP API requests against backend server.
           </p>
         </div>
 
@@ -190,17 +212,17 @@ export default function ApiView() {
           </h4>
           <div className="space-y-1.5 text-xs">
             <button
-              onClick={() => handleFillDemoCreds('admin@example.com', 'DUMMY_PASSWORD')}
+              onClick={() => handleFillDemoCreds('admin@fortifyauth.io', 'Password123!')}
               className="w-full flex justify-between p-2 rounded border border-[#1e293b] bg-[#020617] hover:bg-slate-900 font-sans text-left text-slate-200 cursor-pointer"
             >
-              <span className="text-xs">🔑 Admin Template</span>
+              <span className="text-xs">🔑 Admin Credentials</span>
               <span className="font-mono text-emerald-400 text-[10px]">ADMIN</span>
             </button>
             <button
-              onClick={() => handleFillDemoCreds('user@example.com', 'DUMMY_PASSWORD')}
+              onClick={() => handleFillDemoCreds('user@fortifyauth.io', 'Password123!')}
               className="w-full flex justify-between p-2 rounded border border-[#1e293b] bg-[#020617] hover:bg-slate-900 font-sans text-left text-slate-200 cursor-pointer"
             >
-              <span className="text-xs">🔑 User Template</span>
+              <span className="text-xs">🔑 User Credentials</span>
               <span className="font-mono text-emerald-400 text-[10px]">USER</span>
             </button>
           </div>
@@ -294,11 +316,13 @@ export default function ApiView() {
               <Send className="h-4 w-4" />
               <span>Send Request</span>
             </button>
-            <span className="text-[10px] text-slate-500 font-mono">SIMULATION MODE ACTIVE</span>
+            <span className="text-[10px] text-[#10b981] font-mono font-bold">
+              REAL API MODE ACTIVE
+            </span>
           </div>
         </div>
 
-        {/* Real-Time Responses Console and Simulated DB State */}
+        {/* Real-Time Responses Console and Server State */}
         <div className="w-full md:w-[480px] bg-[#0f172a] text-slate-300 overflow-y-auto flex flex-col justify-between p-6 shadow-2xl relative shrink-0 border-t md:border-t-0 md:border-l border-[#1e293b]">
           <div className="space-y-6">
             {/* Headers Console */}
@@ -328,7 +352,7 @@ export default function ApiView() {
                 <div className="h-40 flex flex-col items-center justify-center text-center text-slate-500 select-none space-y-2">
                   <PlayCircleIcon className="h-8 w-8 text-slate-700 animate-pulse" />
                   <p className="text-[11px] text-slate-400">
-                    Console is passive. Push "Send Request" to trigger simulation codes.
+                    Console ready. Click "Send Request" to send real API calls to backend endpoints.
                   </p>
                 </div>
               )}
@@ -342,7 +366,7 @@ export default function ApiView() {
                   <span>Interactive Server States</span>
                 </span>
                 <span className="text-[10px] bg-slate-950 text-emerald-400 px-2.5 py-0.5 rounded-full font-mono border border-[#1e293b]">
-                  {simState.registeredUsers.length} Users
+                  {dbUsers.length} Users
                 </span>
               </div>
 
@@ -352,34 +376,40 @@ export default function ApiView() {
                   Stored Database Users:
                 </span>
                 <div className="grid grid-cols-1 gap-1.5 max-h-24 overflow-y-auto">
-                  {simState.registeredUsers.map((u, i) => (
-                    <div
-                      key={i}
-                      className="px-2.5 py-1.5 bg-slate-950 border border-[#1e293b] rounded flex items-center justify-between text-[11px] font-mono"
-                    >
-                      <span className="truncate max-w-[200px] text-slate-300">{u.email}</span>
-                      <div className="flex items-center space-x-1.5">
-                        <span
-                          className={`px-1 py-0.2 text-[8px] font-sans font-bold uppercase rounded ${
-                            u.role === 'ADMIN'
-                              ? 'bg-emerald-950/60 text-[#10b981] border border-[#10b981]/30'
-                              : 'bg-slate-900 text-slate-400'
-                          }`}
-                        >
-                          {u.role}
-                        </span>
-                        <span
-                          className={`px-1.5 py-0.2 text-[8px] font-sans font-bold uppercase rounded ${
-                            u.isVerified
-                              ? 'bg-emerald-955/75 text-[#10b981]'
-                              : 'bg-amber-955/75 text-amber-500'
-                          }`}
-                        >
-                          {u.isVerified ? 'verified' : 'pending'}
-                        </span>
+                  {dbUsers.length > 0 ? (
+                    dbUsers.map((u, i) => (
+                      <div
+                        key={i}
+                        className="px-2.5 py-1.5 bg-slate-950 border border-[#1e293b] rounded flex items-center justify-between text-[11px] font-mono"
+                      >
+                        <span className="truncate max-w-[200px] text-slate-300">{u.email}</span>
+                        <div className="flex items-center space-x-1.5">
+                          <span
+                            className={`px-1 py-0.2 text-[8px] font-sans font-bold uppercase rounded ${
+                              u.role === 'ADMIN'
+                                ? 'bg-emerald-950/60 text-[#10b981] border border-[#10b981]/30'
+                                : 'bg-slate-900 text-slate-400'
+                            }`}
+                          >
+                            {u.role}
+                          </span>
+                          <span
+                            className={`px-1.5 py-0.2 text-[8px] font-sans font-bold uppercase rounded ${
+                              u.isEmailVerified
+                                ? 'bg-emerald-955/75 text-[#10b981]'
+                                : 'bg-amber-955/75 text-amber-500'
+                            }`}
+                          >
+                            {u.isEmailVerified ? 'verified' : 'pending'}
+                          </span>
+                        </div>
                       </div>
+                    ))
+                  ) : (
+                    <div className="text-[10px] text-slate-500 text-center py-2 font-mono">
+                      Log in as admin in Auth Gateway to inspect user records.
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
 
@@ -392,13 +422,11 @@ export default function ApiView() {
                       Active Session Identity
                     </div>
                     <div className="text-[10px] text-slate-450 mt-0.5">
-                      {simState.currentUser
-                        ? simState.currentUser.email
-                        : 'No Active Session (Guest)'}
+                      {activeSessionUser ? activeSessionUser.email : 'No Active Session (Guest)'}
                     </div>
                   </div>
                 </div>
-                {simState.currentUser && (
+                {activeSessionUser && (
                   <span className="px-1.5 py-0.5 bg-emerald-950/60 text-[#10b981] rounded text-[8px] font-mono font-bold uppercase tracking-wider border border-[#10b981]/20">
                     LOGGED IN
                   </span>
@@ -417,7 +445,6 @@ export default function ApiView() {
   );
 }
 
-// Icon fallbacks inside JSX
 function PlayCircleIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg

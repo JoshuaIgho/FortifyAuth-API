@@ -112,7 +112,6 @@ export default function ArchitectureView() {
                 Backing Services
               </div>
 
-
               {/* Postgres DB */}
               <button
                 onClick={() => setSelectedNodeId('postgres_db')}
