@@ -1,14 +1,32 @@
 import { jest } from '@jest/globals';
-import request from 'supertest';
-import { StatusCodes } from 'http-status-codes';
-import '../singleton'; // This must be imported before app
-import app from '../../app';
-import { prismaMock } from '../singleton';
-import * as hashUtil from '../../utils/hash.util';
-import { TokenService } from '../../services/token.service';
+import { mockDeep, DeepMockProxy } from 'jest-mock-extended';
+import { PrismaClient } from '@prisma/client';
 
-// Mock dependencies that cause issues in ESM + Jest
-jest.mock('isomorphic-dompurify');
+export const prismaMock = mockDeep<PrismaClient>() as unknown as DeepMockProxy<PrismaClient>;
+
+jest.unstable_mockModule('../../config/prisma.config', () => ({
+  __esModule: true,
+  prisma: prismaMock,
+  default: prismaMock,
+}));
+
+jest.unstable_mockModule('isomorphic-dompurify', () => ({
+  __esModule: true,
+  default: {
+    sanitize: (str: string) => str,
+  },
+}));
+
+jest.unstable_mockModule('../../utils/hash.util', () => ({
+  __esModule: true,
+  hashPassword: jest.fn(() => Promise.resolve('hashed-password')),
+  verifyPassword: jest.fn(() => Promise.resolve(true)),
+}));
+
+const { default: app } = await import('../../app');
+const { StatusCodes } = await import('http-status-codes');
+const { default: request } = await import('supertest');
+const { TokenService } = await import('../../services/token.service');
 
 describe('Auth Integration Tests', () => {
   const testUser = {
@@ -72,8 +90,6 @@ describe('Auth Integration Tests', () => {
       prismaMock.user.findUnique.mockResolvedValue(dbUser as any);
       prismaMock.refreshToken.create.mockResolvedValue({} as any);
       prismaMock.auditLog.create.mockResolvedValue({} as any);
-
-      jest.spyOn(hashUtil, 'verifyPassword').mockResolvedValue(true);
 
       const res = await request(app).post('/api/v1/auth/login').send(testUser);
 

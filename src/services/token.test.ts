@@ -1,15 +1,6 @@
-import { jest } from '@jest/globals';
 import { TokenService } from './token.service';
+import { env } from '../config/env.config';
 import jwt from 'jsonwebtoken';
-
-jest.mock('../config/env.config', () => ({
-  env: {
-    JWT_ACCESS_SECRET: 'test-access-secret',
-    JWT_ACCESS_EXPIRY: '15m',
-    JWT_REFRESH_SECRET: 'test-refresh-secret',
-    JWT_REFRESH_EXPIRY: '7d',
-  },
-}));
 
 describe('TokenService', () => {
   const payload = {
@@ -22,13 +13,13 @@ describe('TokenService', () => {
     const token = TokenService.generateAccessToken(payload);
     expect(token).toBeDefined();
 
-    const decoded = jwt.verify(token, 'test-access-secret') as any;
+    const decoded = jwt.verify(token, env.JWT_ACCESS_SECRET) as any;
     expect(decoded.userId).toBe(payload.userId);
     expect(decoded.email).toBe(payload.email);
   });
 
   it('should verify a valid access token', () => {
-    const token = jwt.sign(payload, 'test-access-secret');
+    const token = jwt.sign(payload, env.JWT_ACCESS_SECRET);
     const verified = TokenService.verifyAccessToken(token);
     expect(verified.userId).toBe(payload.userId);
   });
@@ -37,7 +28,7 @@ describe('TokenService', () => {
     const token = TokenService.generateRefreshToken(payload);
     expect(token).toBeDefined();
 
-    const decoded = jwt.verify(token, 'test-refresh-secret') as any;
+    const decoded = jwt.verify(token, env.JWT_REFRESH_SECRET) as any;
     expect(decoded.userId).toBe(payload.userId);
   });
 });

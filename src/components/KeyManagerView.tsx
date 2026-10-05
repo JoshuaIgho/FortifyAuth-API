@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  Shovel as KeyCode,
   Plus,
   Check,
   Trash2,
@@ -8,39 +7,25 @@ import {
   Clipboard,
   CheckCircle2,
   ShieldAlert,
+  Loader2,
 } from 'lucide-react';
+import { requestApi } from '../utils/apiClient';
 
 interface ApiKeyItem {
   id: string;
   name: string;
   prefix: string;
-  secretReveal: string; // Exposed only once upon creation
+  secretReveal?: string;
   scopes: string[];
   isActive: boolean;
   createdAt: string;
 }
 
 export default function KeyManagerView() {
-  const [keys, setKeys] = useState<ApiKeyItem[]>([
-    {
-      id: 'fa_key_01',
-      name: 'GitHub Deployment CI Gateway',
-      prefix: 'fa_live_b48f9...',
-      secretReveal: 'fa_live_b48f9aee210a56e208b04fdcc9',
-      scopes: ['read:users', 'write:deployments'],
-      isActive: true,
-      createdAt: '2026-06-18',
-    },
-    {
-      id: 'fa_key_02',
-      name: 'Stripe Payment Ingress Webhook',
-      prefix: 'fa_live_fa530...',
-      secretReveal: 'fa_live_fa53099ea6e210fafc03efd208',
-      scopes: ['write:billing'],
-      isActive: true,
-      createdAt: '2026-06-19',
-    },
-  ]);
+  const [keys, setKeys] = useState<ApiKeyItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [newKeyName, setNewKeyName] = useState('');
   const [selectedScopes, setSelectedScopes] = useState<string[]>(['read:users']);
@@ -54,51 +39,78 @@ export default function KeyManagerView() {
     { id: 'write:billing', desc: 'Alter client ledger payments' },
   ];
 
+  const fetchKeys = async () => {
+    setLoading(true);
+    setError(null);
+    const res = await requestApi('/api/v1/api-keys');
+    setLoading(false);
+
+    if (res.status === 200 && Array.isArray(res.data.data)) {
+      setKeys(res.data.data);
+    } else {
+      setError(
+        res.data.message ||
+          'Authentication required to manage API keys. Please log in via Auth Gateway.',
+      );
+    }
+  };
+
+  useEffect(() => {
+    fetchKeys();
+  }, []);
+
   const handleToggleScope = (scopeId: string) => {
     setSelectedScopes((prev) =>
       prev.includes(scopeId) ? prev.filter((s) => s !== scopeId) : [...prev, scopeId],
     );
   };
 
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newKeyName.trim()) return;
 
-    // Simulate high entropy key generation
-    const chars = 'abcdef1234567890';
-    let suffix = '';
-    for (let i = 0; i < 20; i++) {
-      suffix += chars.charAt(Math.floor(Math.random() * chars.length));
+    setCreating(true);
+    const res = await requestApi('/api/v1/api-keys', {
+      method: 'POST',
+      body: {
+        name: newKeyName,
+        scopes: selectedScopes,
+      },
+    });
+    setCreating(false);
+
+    if (res.status === 201 && res.data.data) {
+      const { apiKey, secretReveal } = res.data.data;
+      const createdItem: ApiKeyItem = {
+        ...apiKey,
+        secretReveal,
+      };
+
+      setKeys((prev) => [createdItem, ...prev]);
+      setNewKeyName('');
+      setSelectedScopes(['read:users']);
+      setCreatedNotification(
+        `Successfully provisioned API Key! Record token carefully (only revealed once): ${secretReveal}`,
+      );
+    } else {
+      setCreatedNotification(`Failed to create API key: ${res.data.message || 'Unknown error'}`);
     }
-    const rawKey = `fa_live_${suffix}`;
-    const truncatedPrefix = `${rawKey.substring(0, 12)}...`;
-
-    const newKey: ApiKeyItem = {
-      id: `fa_key_${Date.now()}`,
-      name: newKeyName,
-      prefix: truncatedPrefix,
-      secretReveal: rawKey,
-      scopes: [...selectedScopes],
-      isActive: true,
-      createdAt: new Date().toISOString().split('T')[0],
-    };
-
-    setKeys((prev) => [newKey, ...prev]);
-    setNewKeyName('');
-    setSelectedScopes(['read:users']);
-    setCreatedNotification(
-      `Successfully provisioned API Key! Record token carefully (only revealed once): ${rawKey}`,
-    );
   };
 
-  const handleDelete = (id: string, name: string) => {
-    setKeys((prev) => prev.filter((k) => k.id !== id));
-    setCreatedNotification(
-      `Permanently revoked and purged API credential "${name}" from PostgreSQL indexes.`,
-    );
+  const handleDelete = async (id: string, name: string) => {
+    const res = await requestApi(`/api/v1/api-keys/${id}`, { method: 'DELETE' });
+    if (res.status === 200) {
+      setKeys((prev) => prev.filter((k) => k.id !== id));
+      setCreatedNotification(
+        `Permanently revoked and purged API credential "${name}" from PostgreSQL database.`,
+      );
+    } else {
+      setCreatedNotification(`Failed to revoke key: ${res.data.message || 'Unknown error'}`);
+    }
   };
 
-  const handleCopy = (id: string, code: string) => {
+  const handleCopy = (id: string, code?: string) => {
+    if (!code) return;
     navigator.clipboard.writeText(code);
     setCopiedKeyId(id);
     setTimeout(() => setCopiedKeyId(null), 2000);
@@ -117,6 +129,14 @@ export default function KeyManagerView() {
           access scopes.
         </p>
       </div>
+
+      {/* Error state if unauthenticated */}
+      {error && (
+        <div className="p-4 bg-amber-950/20 border border-amber-900/30 rounded-xl text-amber-300 text-xs flex items-start gap-2">
+          <ShieldAlert className="h-4.5 w-4.5 shrink-0 mt-0.5 text-amber-400" />
+          <p className="font-sans leading-normal">{error}</p>
+        </div>
+      )}
 
       {/* Dynamic Action Notification */}
       {createdNotification && (
@@ -199,9 +219,11 @@ export default function KeyManagerView() {
 
             <button
               type="submit"
-              className="w-full py-3 bg-[#10b981] hover:bg-emerald-500 text-slate-950 font-bold rounded-lg text-xs leading-none transition-all cursor-pointer"
+              disabled={creating}
+              className="w-full py-3 bg-[#10b981] hover:bg-emerald-500 text-slate-950 font-bold rounded-lg text-xs leading-none transition-all cursor-pointer flex items-center justify-center space-x-2 disabled:opacity-50"
             >
-              SPAWN NEW CREDENTIAL
+              {creating && <Loader2 className="h-4 w-4 animate-spin" />}
+              <span>SPAWN NEW CREDENTIAL</span>
             </button>
           </form>
         </div>
@@ -212,78 +234,92 @@ export default function KeyManagerView() {
             Active Workspace API Keys ({keys.length})
           </h3>
 
-          <div className="space-y-4 font-sans text-xs">
-            {keys.map((key) => (
-              <div
-                key={key.id}
-                className="p-4 bg-slate-950 border border-[#1e293b] rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-              >
-                {/* Details info */}
-                <div className="space-y-1.5 min-w-0">
-                  <div className="flex items-center space-x-2.5">
-                    <h4 className="font-bold text-white text-sm truncate">{key.name}</h4>
-                    <span className="px-1.5 py-0.2 rounded bg-[#1e293b] border border-[#1e293b] text-[8px] font-mono text-[#10b981] font-bold uppercase tracking-wider">
-                      ACTIVE
-                    </span>
+          {loading ? (
+            <div className="p-12 flex flex-col items-center justify-center text-slate-400 space-y-3">
+              <Loader2 className="h-7 w-7 text-[#10b981] animate-spin" />
+              <span className="text-xs font-mono">Loading API keys from backend...</span>
+            </div>
+          ) : (
+            <div className="space-y-4 font-sans text-xs">
+              {keys.map((key) => (
+                <div
+                  key={key.id}
+                  className="p-4 bg-slate-950 border border-[#1e293b] rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                >
+                  {/* Details info */}
+                  <div className="space-y-1.5 min-w-0">
+                    <div className="flex items-center space-x-2.5">
+                      <h4 className="font-bold text-white text-sm truncate">{key.name}</h4>
+                      <span className="px-1.5 py-0.2 rounded bg-[#1e293b] border border-[#1e293b] text-[8px] font-mono text-[#10b981] font-bold uppercase tracking-wider">
+                        ACTIVE
+                      </span>
+                    </div>
+
+                    {/* Masked code */}
+                    <div className="flex items-center space-x-2 font-mono text-[10px]">
+                      <span className="text-slate-500">PREFIX:</span>
+                      <span className="text-emerald-450 bg-slate-900/60 px-1.5 py-0.5 rounded border border-[#1e293b]/40">
+                        {key.prefix}
+                      </span>
+                      {key.secretReveal && (
+                        <button
+                          onClick={() => handleCopy(key.id, key.secretReveal)}
+                          className="text-slate-500 hover:text-white transition-all cursor-pointer flex items-center space-x-1"
+                          title="Copy raw token key copy"
+                        >
+                          <Clipboard className="h-3.5 w-3.5" />
+                          <span>{copiedKeyId === key.id ? 'Copied!' : 'Copy Secret'}</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Map Scopes */}
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {key.scopes.map((sc, index) => (
+                        <span
+                          key={index}
+                          className="px-1.5 py-0.2 bg-slate-950 border border-[#1e293b] text-[8px] font-mono text-slate-400 rounded-md"
+                        >
+                          {sc}
+                        </span>
+                      ))}
+                    </div>
                   </div>
 
-                  {/* Masked code */}
-                  <div className="flex items-center space-x-2 font-mono text-[10px]">
-                    <span className="text-slate-500">PREFIX:</span>
-                    <span className="text-emerald-450 bg-slate-900/60 px-1.5 py-0.5 rounded border border-[#1e293b]/40">
-                      {key.prefix}
-                    </span>
+                  {/* Date and Delete actions column */}
+                  <div className="flex sm:flex-col items-start sm:items-end justify-between sm:justify-center gap-2 border-t sm:border-t-0 border-[#1e293b] pt-3 sm:pt-0 shrink-0">
+                    <div className="flex items-center space-x-1 font-mono text-[9px] text-slate-500">
+                      <Calendar className="h-3 w-3" />
+                      <span>
+                        Created:{' '}
+                        {typeof key.createdAt === 'string'
+                          ? key.createdAt.split('T')[0]
+                          : new Date(key.createdAt).toISOString().split('T')[0]}
+                      </span>
+                    </div>
+
                     <button
-                      onClick={() => handleCopy(key.id, key.secretReveal)}
-                      className="text-slate-500 hover:text-white transition-all cursor-pointer"
-                      title="Copy raw token key copy"
+                      onClick={() => handleDelete(key.id, key.name)}
+                      className="px-2 py-1 text-rose-500 hover:text-white hover:bg-rose-950/40 rounded transition-all cursor-pointer border border-transparent hover:border-rose-900/30 font-mono text-[10px]"
                     >
-                      {copiedKeyId === key.id ? 'Copied!' : <Clipboard className="h-3.5 w-3.5" />}
+                      <Trash2 className="h-3.5 w-3.5 inline mr-1" />
+                      Revoke
                     </button>
                   </div>
-
-                  {/* Map Scopes */}
-                  <div className="flex flex-wrap gap-1.5 pt-1">
-                    {key.scopes.map((sc, index) => (
-                      <span
-                        key={index}
-                        className="px-1.5 py-0.2 bg-slate-950 border border-[#1e293b] text-[8px] font-mono text-slate-400 rounded-md"
-                      >
-                        {sc}
-                      </span>
-                    ))}
-                  </div>
                 </div>
+              ))}
 
-                {/* Date and Delete actions column */}
-                <div className="flex sm:flex-col items-start sm:items-end justify-between sm:justify-center gap-2 border-t sm:border-t-0 border-[#1e293b] pt-3 sm:pt-0 shrink-0">
-                  <div className="flex items-center space-x-1 font-mono text-[9px] text-slate-500">
-                    <Calendar className="h-3 w-3" />
-                    <span>Created: {key.createdAt}</span>
-                  </div>
-
-                  <button
-                    onClick={() => handleDelete(key.id, key.name)}
-                    className="px-2 py-1 text-rose-500 hover:text-white hover:bg-rose-950/40 rounded transition-all cursor-pointer border border-transparent hover:border-rose-900/30 font-mono text-[10px]"
-                  >
-                    <Trash2 className="h-3.5 w-3.5 inline mr-1" />
-                    Revoke
-                  </button>
+              {keys.length === 0 && !error && (
+                <div className="p-8 border border-dashed border-[#1e293b] rounded-xl text-center space-y-2.5 text-slate-550 select-none">
+                  <ShieldAlert className="h-7 w-7 text-slate-600 mx-auto" />
+                  <h4 className="text-xs font-bold text-white">No API Credentials Configured</h4>
+                  <p className="text-[10px] text-slate-400 font-sans max-w-sm mx-auto">
+                    Use the form on the left to spawn new scoped API credentials in PostgreSQL.
+                  </p>
                 </div>
-              </div>
-            ))}
-
-            {keys.length === 0 && (
-              <div className="p-8 border border-dashed border-[#1e293b] rounded-xl text-center space-y-2.5 text-slate-550 select-none">
-                <ShieldAlert className="h-7 w-7 text-slate-600 mx-auto" />
-                <h4 className="text-xs font-bold text-white">No API Credentials Configured</h4>
-                <p className="text-[10px] text-slate-400 font-sans max-w-sm mx-auto">
-                  Click build token option values on left to spawn secure developer tokens instantly
-                  with customized access rights.
-                </p>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

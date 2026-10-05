@@ -9,8 +9,12 @@ let server: Server;
 const startServer = async () => {
   try {
     // Verify database connection
-    await prisma.$connect();
-    logger.info('🐘 Database connection established successfully');
+    try {
+      await prisma.$connect();
+      logger.info('🐘 Database connection established successfully');
+    } catch (dbError) {
+      logger.warn('⚠️ Database connection could not be established immediately, starting HTTP server anyway.');
+    }
 
     server = app.listen(env.PORT, () => {
       logger.info(`🚀 Server is running on port ${env.PORT} in ${env.NODE_ENV} mode`);

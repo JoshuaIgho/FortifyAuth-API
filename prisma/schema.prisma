@@ -24,6 +24,9 @@ enum AuditAction {
   USER_ROLE_UPDATED
   MFA_ENABLED
   MFA_DISABLED
+  API_KEY_CREATED
+  API_KEY_REVOKED
+  SESSION_REVOKED
 }
 
 model User {
@@ -42,8 +45,24 @@ model User {
   passwordResets     PasswordResetToken[]
   loginHistories     LoginHistory[]
   auditLogs          AuditLog[]
+  apiKeys            ApiKey[]
 
   @@index([email])
+}
+
+model ApiKey {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  prefix    String
+  keyHash   String   @unique
+  scopes    String[]
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([keyHash])
 }
 
 model DeviceSession {
